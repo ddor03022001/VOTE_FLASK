@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách tiết mục</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .navbar .user-info {
+            font-size: 18px;
+        }
+
+        /* Slider */
+        .slider-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 20px;
+            scroll-snap-type: x mandatory;
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slider-card {
+            flex: 0 0 300px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slider-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+
+        .slider-card-content {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .slider-card h3 {
+            margin: 10px 0;
+            font-size: 20px;
+        }
+
+        .vote-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .vote-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .vote-btn.voted {
+            background-color: #dc3545;
+        }
+
+        .vote-icon {
+            font-size: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .vote-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .like-count {
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+        <div class="user-info">
+            {% if session['user_login'] %}
+            Xin chào, {{ session['user_login'] }}!
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit">Đăng xuất</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Slider Section -->
+    <h1 style="text-align: center; margin: 20px 0;">Danh sách tiết mục</h1>
+    <div class="slider-container">
+        {% for festival in festivals %}
+        <div class="slider-card" id="festival-{{ festival[0] }}">
+            <img src="../static/images/sea.jpg" alt="Tiết mục {{ festival[1] }}">
+            <div class="slider-card-content">
+                <h3>{{ festival[1] }}</h3>
+                <div class="vote-section">
+                    <span class="vote-icon" data-id="{{ festival[0] }}"
+                        data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
+                        {% if festival[0] in user_votes %}
+                        ❤️
+                        {% else %}
+                        🤍
+                        {% endif %}
+                    </span>
+                    <span class="like-count">{{ festival[2] }} lượt thích</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const socket = io.connect();
+
+        socket.on('update_vote', function (data) {
+            const $row = $(`#festival-${data.vote_festival_model_id}`);
+            const $likeCount = $row.find('.like-count');
+            $likeCount.text(`${data.vote_number} lượt thích`);
+        });
+
+        $('.vote-icon').on('click', function () {
+            const $icon = $(this);
+            const voteId = $icon.data('id');
+            const voted = $icon.data('voted') === 'true';
+
+            $.ajax({
+                url: '/vote',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ vote_id: voteId }),
+                success: function (response) {
+                    if (response.action === 'added') {
+                        $icon.text('❤️');
+                        $icon.data('voted', 'true');
+                    } else {
+                        $icon.text('🤍');
+                        $icon.data('voted', 'false');
+                    }
+                },
+                error: function () {
+                    alert("Có lỗi xảy ra! Vui lòng thử lại.");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
