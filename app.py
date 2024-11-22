@@ -151,7 +151,7 @@ def get_likes():
     list_user_votes = [user_id[0] for user_id in user_ids] 
 
     if list_user_votes:
-        cur.execute("SELECT login FROM res_users WHERE id IN %s", (tuple(list_user_votes),))
+        cur.execute("SELECT name_vote FROM res_users WHERE id IN %s", (tuple(list_user_votes),))
         user_logins = cur.fetchall()
     else:
         user_logins = []
