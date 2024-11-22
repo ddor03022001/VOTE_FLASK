@@ -4,10 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách tiết mục</title>
+    <title>Danh sách bình chọn</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -22,91 +29,312 @@
             align-items: center;
             background-color: #333;
             color: #fff;
-            padding: 10px 20px;
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
         }
 
-        .navbar a {
-            color: #fff;
-            text-decoration: none;
-            margin-left: 20px;
+        .navbar p {
+            margin: 0;
+            font-size: 14px;
         }
 
-        .navbar .user-info {
-            font-size: 18px;
-        }
-
-        /* Slider */
-        .slider-container {
+        .navbar button {
+            background: none;
+            border: none;
+            color: white;
             display: flex;
-            overflow-x: auto;
-            gap: 20px;
-            padding: 20px;
-            scroll-snap-type: x mandatory;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 14px;
         }
 
-        .slider-container::-webkit-scrollbar {
-            display: none;
+        .navbar button :hover {
+            cursor: pointer;
         }
 
-        .slider-card {
-            flex: 0 0 300px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            position: relative;
+        .description {
+            max-width: 80%;
+            text-align: center;
+            margin: 0 auto;
         }
 
-        .slider-card img {
-            width: 100%;
-            height: 350px;
-            object-fit: cover;
-        }
-
-        .slider-card-content {
-            padding: 15px;
+        .title {
+            font-weight: 600;
+            font-size: 24px;
+            margin: 2rem auto 1rem;
             text-align: center;
         }
 
-        .slider-card h3 {
-            margin: 10px 0;
-            font-size: 20px;
+        @media screen and (max-width:1280px) {
+            .contestant-container {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
         }
 
-        .vote-section {
+        @media screen and (max-width:680px) {
+            .contestant-container {
+                grid-template-columns: repeat(1, 1fr) !important;
+            }
+        }
+
+        @media screen and (max-width:400px) {
+            .description {
+                max-width: 90%;
+                font-size: 13px;
+            }
+
+            .title {
+                max-width: 90%;
+                font-size: 20px;
+            }
+
+            .contestant-item-body p {
+                font-size: 14px;
+            }
+
+            .contestant-item-body .order {
+                height: 35px !important;
+                width: 35px !important;
+                font-size: 16px !important;
+            }
+
+            .contestant-item-body .order img {
+                height: 40px !important;
+            }
+
+            .contestant-item-footer {
+                padding: 1rem 0 0 !important;
+            }
+
+            .contestant-item-footer-btn {
+                padding: 0.5rem;
+                font-size: 13px !important;
+            }
+
+            .contestant-item-footer-btns {
+                gap: 0.5rem !important;
+            }
+
+            .contestant-item-footer-likes {
+                padding-left: 0.5rem;
+                gap: 5px !important;
+            }
+
+            .contestant-item-footer-likes img {
+                height: 20px !important;
+            }
+
+            .contestant-item-footer-likes span {
+                font-size: 14px !important;
+            }
+        }
+
+        /* List */
+        .contestant-container {
+            gap: 2rem;
+            padding: 2rem 1.5rem 2rem;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+
+
+        .contestant-item {
+            width: 100%;
+            border-radius: 10px;
+            background: white;
+            padding: 1rem;
+            box-shadow: 1px 2px 2px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .contestant-item.first {
+            border: 5px solid #F9E400;
+        }
+
+        .contestant-item.second {
+            border: 5px solid #C9D7DD;
+        }
+
+        .contestant-item.third {
+            border: 5px solid #B2533E;
+        }
+
+        .contestant-item-body {
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 15px;
-            margin-top: 10px;
+            gap: 1rem;
         }
 
-        .vote-btn {
-            background-color: #007bff;
+        .contestant-item-body p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .contestant-item-body .order {
+            height: 45px;
             color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 15px;
+            width: 45px;
+            border-radius: 50%;
+            background: #5a5958;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .contestant-item-body .order.medal {
+            background: none;
+        }
+
+        .contestant-item-body .order img {
+            height: 50px;
+        }
+
+        .contestant-item-footer {
+            padding: 1.5rem 0.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .contestant-item-footer-likes {
+            display: flex;
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            padding: 0.2rem;
+            border-radius: 10px;
         }
 
-        .vote-btn.voted {
-            background-color: #dc3545;
+        .contestant-item-footer-likes:hover {
+            text-decoration: underline;
+            background: #f1f1f1;
         }
 
-        .vote-icon {
-            font-size: 25px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .vote-icon:hover {
-            transform: scale(1.2);
-        }
-
-        .like-count {
+        .contestant-item-footer-likes span {
             font-size: 16px;
+            line-height: 16px;
+        }
+
+        .contestant-item-footer-btns {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contestant-item-footer-btn {
+            border: none;
+            background: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .contestant-item-footer-btn.view {
+            cursor: pointer;
+            box-shadow: none;
+            color: #333;
+        }
+
+        .contestant-item-footer-btn.view:hover {
+            background: #f1f1f1;
+        }
+
+        .contestant-item-footer-btn.like {
+            background: #FF4C4C;
+            cursor: pointer;
+        }
+
+        .contestant-item-footer-btn.like:hover {
+            background: crimson;
+        }
+
+        .contestant-item-footer-btn.unlike {
+            background: #dfdfdf;
+            cursor: pointer;
+            color: black;
+        }
+
+        .contestant-item-footer-btn.unlike:hover {
+            background: #f1f1f1;
+        }
+
+        .liker-list-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .liker-list-background.hidden {
+            display: none;
+        }
+
+        .liker-list {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            max-height: 80%;
+        }
+
+        .liker-list header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0 1rem;
+            padding-right: 0;
+            margin-bottom: 1rem;
+        }
+
+        .liker-list header span {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .liker-list-body {
+            min-height: 200px;
+            max-height: 400px;
+            scrollbar-width: thin;
+            overflow: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .liker-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .liker-item img {
+            width: 30px;
+            height: 30px;
+        }
+
+        .liker-item span {
+            font-size: 14px;
+            line-height: 14px;
         }
     </style>
 </head>
@@ -114,38 +342,81 @@
 <body>
     <!-- Navigation Bar -->
     <div class="navbar">
-        <div class="user-info">
-            {% if session['user_login'] %}
-            Xin chào, {{ session['user_login'] }}!
-            <form action="{{ url_for('logout') }}" method="POST">
-                <button type="submit">Đăng xuất</button>
-            </form>
-            {% endif %}
-        </div>
+        {% if session['user_login'] %}
+        <p>{{ session['user_login'] }}</p>
+        <form action="{{ url_for('logout') }}" method="POST">
+            <button type="submit"><i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Đăng
+                    xuất</span></button>
+        </form>
+        {% endif %}
     </div>
 
     <!-- Slider Section -->
-    <h1 style="text-align: center; margin: 20px 0;">Danh sách tiết mục</h1>
-    <div class="slider-container">
+    <h1 class="title">Bình chọn Gala 2025</h1>
+    <div class="description">
+        <p>Chương trình bình chọn các tiết mục được yêu thích cho đêm tất niên ở BGTV</p>
+    </div>
+    <div class="contestant-container">
         {% for festival in festivals %}
-        <div class="slider-card" id="festival-{{ festival[0] }}">
-            <img src="../static/images/sea.jpg" alt="Tiết mục {{ festival[1] }}">
-            <div class="slider-card-content">
-                <h3>{{ festival[1] }}</h3>
-                <div class="vote-section">
-                    <span class="vote-icon" data-id="{{ festival[0] }}"
+        <div class="contestant-item first" id="festival-{{ festival[0] }}">
+            <div class="contestant-item-body">
+                {% if loop.index == 1 %}
+                <div class="order medal">
+                    <img alt=""
+                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732190419/tn6ajfypn79vno49kbmu.png" />
+                </div>
+                {% elif loop.index == 2 %}
+                <div class="order medal">
+                    <img alt=""
+                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732190421/lemjwaxnvo2skzqo04rm.png" />
+                </div>
+                {% elif loop.index == 3 %}
+                <div class="order medal">
+                    <img alt=""
+                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732191352/qqixrdjvwphpokcy9npe.png" />
+                </div>
+                {% else %}
+                <div class="order">
+                    <span>{{ loop.index }}</span>
+                </div>
+                {% endif %}
+                <p>{{ festival[1] }}</p>
+            </div>
+            <div class="contestant-item-footer">
+                <div class='contestant-item-footer-likes'>
+                    <img alt=""
+                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
+                        style="height:25px" />
+                    <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
+                </div>
+                <div class='contestant-item-footer-btns'>
+                    <button class="contestant-item-footer-btn view"><i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Xem</span></button>
+                    <div class="vote-icon" data-id="{{ festival[0] }}"
                         data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
                         {% if festival[0] in user_votes %}
-                        ❤️
+                        <button class="contestant-item-footer-btn unlike"><i class="fa-solid fa-heart-crack"></i>
+                            <span>Hủy tim</span></button>
                         {% else %}
-                        🤍
+                        <button class="contestant-item-footer-btn like"><i class="fa-solid fa-heart"></i>
+                            <span>Thả tim</span></button>
                         {% endif %}
-                    </span>
-                    <span class="like-count">{{ festival[2] }} lượt thích</span>
+                    </div>
                 </div>
             </div>
         </div>
         {% endfor %}
+    </div>
+
+    <div class="liker-list-background hidden">
+        <div class="liker-list">
+            <header>
+                <span>Danh sách người thích</span>
+                <i class="fa-solid fa-circle-xmark"></i>
+            </header>
+            <div class="liker-list-body">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -155,6 +426,42 @@
             const $row = $(`#festival-${data.vote_festival_model_id}`);
             const $likeCount = $row.find('.like-count');
             $likeCount.text(`${data.vote_number} lượt thích`);
+        });
+
+        $('.like-count').on('click', function () {
+            const $icon = $(this);
+            const voteId = $icon.data('id');
+            console.log("check id: ", voteId);
+            $.ajax({
+                url: '/get_likes',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ vote_id: voteId }),
+                success: function (response) {
+                    if (response.status === 'success') {
+                        $('.liker-list-body').empty();
+
+                        response.likes.forEach(function (like) {
+                            const likerItem = `<div class="liker-item">
+                        <img alt="" src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732198029/x1b1oxy8hvcvzr7oaiht.png"/>
+                        <span>${like[0]}</span>
+                    </div>`;
+                            $('.liker-list-body').append(likerItem);
+                        });
+
+                        $('.liker-list-background').removeClass('hidden');
+                    } else {
+                        alert('Có lỗi xảy ra khi lấy dữ liệu!');
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra! Vui lòng thử lại.');
+                }
+            });
+        });
+
+        $('.liker-list-background i').on('click', function () {
+            $('.liker-list-background').addClass('hidden');
         });
 
         $('.vote-icon').on('click', function () {
@@ -169,10 +476,20 @@
                 data: JSON.stringify({ vote_id: voteId }),
                 success: function (response) {
                     if (response.action === 'added') {
-                        $icon.text('❤️');
+                        $icon.html(`
+                        <button class="contestant-item-footer-btn unlike">
+                        <i class="fa-solid fa-heart-crack"></i> 
+                        <span>Hủy tim</span>
+                    </button>                   
+                `);
                         $icon.data('voted', 'true');
                     } else {
-                        $icon.text('🤍');
+                        $icon.html(`
+                    <button class="contestant-item-footer-btn like">
+                        <i class="fa-solid fa-heart"></i> 
+                        <span>Thả tim</span>
+                    </button>
+                `);
                         $icon.data('voted', 'false');
                     }
                 },
