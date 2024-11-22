@@ -1,6 +1,7 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session, jsonify
 from passlib.context import CryptContext
 import psycopg2
+from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = Flask(__name__)
@@ -42,12 +43,14 @@ def close_db_connection(response):
 # Route login
 @app.route('/', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         login = request.form.get('login')
         password = request.form.get('password')
         
         if not login or not password:
-            return "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!", 400
+            error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!"
+            return render_template('login.html', error=error)
 
         conn = g.db_connection
         cur = conn.cursor()
@@ -61,13 +64,13 @@ def login():
             session['user_login'] = user[1]
             return redirect(url_for('index'))  
         else:
-            return "Đăng nhập thất bại! Tên đăng nhập hoặc mật khẩu không đúng."
+            error = "Đăng nhập thất bại! Tên đăng nhập hoặc mật khẩu không đúng."
+            return render_template('login.html', error=error)
 
-    return render_template('login.html')
+    return render_template('login.html', error=error)
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    print("hello")
     session.pop('user_id', None) 
     session.pop('user_login', None)  
     return redirect(url_for('login'))  
@@ -90,7 +93,10 @@ def index():
         user_votes[row[0]] = True
 
     cur.close()
-    festivals_sorted = sorted(festivals, key=lambda x: x[2], reverse=True)
+    if festivals:
+        festivals_sorted = sorted(festivals, key=lambda x: x[2], reverse=True)
+    else:
+        festivals_sorted = []
 
     return render_template('index.html', festivals=festivals_sorted, user_votes=user_votes)
 
@@ -155,8 +161,19 @@ def get_likes():
         user_logins = cur.fetchall()
     else:
         user_logins = []
+    cur.close()
         
     return jsonify({"status": "success", "likes": user_logins})
+
+# Thời gian hết hạn bình chọn (có thể lưu trong cơ sở dữ liệu)
+voting_deadline = datetime(2024, 11, 22, 14, 32, 00)
+
+@app.route('/check_voting_status', methods=['GET'])
+def check_voting_status():
+    current_time = datetime.now()
+    if current_time > voting_deadline:
+        return jsonify({"status": "expired"})
+    return jsonify({"status": "active"})
 
 # Join room when user login success
 @socketio.on('join_room')
