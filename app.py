@@ -40,6 +40,32 @@ def close_db_connection(response):
         g.db_connection.close()
     return response
 
+# Route checkin
+@app.route('/checkin', methods=['GET', 'POST'])
+def Checkin():
+    error = None
+    if request.method == 'POST':
+        login = request.form.get('checkin')
+        
+        if not login:
+            error = "Vui lòng nhập đầy đủ số điện thoại!"
+            return render_template('checkin.html', error=error)
+
+        conn = g.db_connection
+        cur = conn.cursor()
+        
+        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE phone_number = %s", (login,))
+        user = cur.fetchone()
+        cur.close()
+
+        if user:
+            return user[1] 
+        else:
+            error = "Đăng nhập thất bại! Số điện thoại không đúng."
+            return render_template('checkin.html', error=error)
+
+    return render_template('checkin.html', error=error)
+
 # Route login
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -157,7 +183,7 @@ def get_likes():
     list_user_votes = [user_id[0] for user_id in user_ids] 
 
     if list_user_votes:
-        cur.execute("SELECT name_vote FROM res_users WHERE id IN %s", (tuple(list_user_votes),))
+        cur.execute("SELECT login FROM res_users WHERE id IN %s", (tuple(list_user_votes),))
         user_logins = cur.fetchall()
     else:
         user_logins = []
@@ -165,7 +191,7 @@ def get_likes():
         
     return jsonify({"status": "success", "likes": user_logins})
 
-# Thời gian hết hạn bình chọn (có thể lưu trong cơ sở dữ liệu)
+# Deadline vote
 voting_deadline = datetime(2024, 11, 22, 14, 32, 00)
 
 @app.route('/check_voting_status', methods=['GET'])

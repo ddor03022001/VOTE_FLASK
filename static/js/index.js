@@ -18,10 +18,10 @@ $(document).ready(function () {
         });
     }
 
-    const intervalId = setInterval(checkVotingStatus, 10000);
-    if (votingExpired) {
-        clearInterval(intervalId);
-    }
+    // const intervalId = setInterval(checkVotingStatus, 10000);
+    // if (votingExpired) {
+    //     clearInterval(intervalId);
+    // }
 
     $('.voting-expired-popup-close').on('click', function () {
         $('.voting-expired-popup').addClass('hidden');

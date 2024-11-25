@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tham Gia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkin.css') }}">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo">
+        </div>
+        <form class="login-form" action="/checkin" method="POST">
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            <input type="text" id="checkin" name="checkin" placeholder="Số Điện Thoại">
+            <button type="submit">Xác Nhận</button>
+        </form>
+    </div>
+</body>
+
+</html>
