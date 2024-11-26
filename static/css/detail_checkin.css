@@ -50,6 +50,7 @@ body {
 }
 
 .confirm {
+    padding: 5px;
     background-color: #0056b3;
     color: white;
     border: none;

@@ -1,10 +1,12 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session, jsonify
 from passlib.context import CryptContext
+from flask_cors import CORS
 import psycopg2
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit, join_room, leave_room
 
 app = Flask(__name__)
+CORS(app)
 socketio = SocketIO(app, async_mode='gevent')
 
 # Setting PostgreSQL Odoo
@@ -140,9 +142,9 @@ def login():
         cur.close()
 
         if user and user[6]:
-            session['user_code'] = user[2]
             session['user_id'] = user[0]
             session['user_login'] = user[1]
+            session['user_code'] = user[2]
             return redirect(url_for('index')) 
         else:
             error = "Đăng nhập thất bại! Số điện thoại không đúng."
