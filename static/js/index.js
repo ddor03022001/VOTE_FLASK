@@ -1,28 +1,4 @@
 $(document).ready(function () {
-    let votingExpired = false;
-    function checkVotingStatus() {
-        if (votingExpired) return;
-        $.ajax({
-            url: '/check_voting_status',
-            type: 'GET',
-            success: function (response) {
-                if (response.status === 'expired') {
-                    votingExpired = true;
-                    $('.voting-expired-popup').removeClass('hidden');
-                    $('.vote-icon').prop('disabled', true).addClass('disabled');
-                }
-            },
-            error: function () {
-                console.error("Có lỗi xảy ra khi kiểm tra trạng thái bình chọn.");
-            }
-        });
-    }
-
-    // const intervalId = setInterval(checkVotingStatus, 10000);
-    // if (votingExpired) {
-    //     clearInterval(intervalId);
-    // }
-
     $('.voting-expired-popup-close').on('click', function () {
         $('.voting-expired-popup').addClass('hidden');
     });
@@ -32,6 +8,17 @@ $(document).ready(function () {
         const $row = $(`#festival-${data.vote_festival_model_id}`);
         const $likeCount = $row.find('.like-count');
         $likeCount.text(`${data.vote_number}`);
+    });
+
+    socket.on('open_vote', function (data) {
+        const $icon = $('.vote-icon');
+        if (data.update_is_open == 2) {
+            $icon.removeClass('hidden');
+            $('.voting-expired-popup').addClass('hidden');
+        } else {
+            $icon.addClass('hidden');
+            $('.voting-expired-popup').removeClass('hidden');
+        }
     });
 
     $('.like-count').on('click', function () {
@@ -99,6 +86,29 @@ $(document).ready(function () {
             },
             error: function () {
                 alert("Có lỗi xảy ra! Vui lòng thử lại.");
+            }
+        });
+    });
+
+    $('.button-open-vote').on('click', function () {
+        const $icon = $(this);
+        const isOpen = $icon.data('id');
+        $.ajax({
+            url: '/get_open_vote',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ is_open: isOpen }),
+            success: function (response) {
+                if (response.action === 'end') {
+                    $icon.data('id', 2);
+                    $icon.text('Kết thúc bình chọn')
+                } else {
+                    $icon.data('id', 1);
+                    $icon.text('Mở bình chọn')
+                }
+            },
+            error: function () {
+                alert('Có lỗi xảy ra! Vui lòng thử lại.');
             }
         });
     });

@@ -31,105 +31,19 @@
     <div class="description">
         <p>Chương trình bình chọn các tiết mục được yêu thích cho đêm tất niên ở BGTV</p>
     </div>
+    {% if session['user_code'] == 'ADMIN' %}
+    <div class="container-admin">
+        <button class="button-open-vote" data-id="{{ is_open }}">
+            {% if is_open == 1 %}
+            Mở bình chọn
+            {% else %}
+            Kết thúc bình chọn
+            {% endif %}
+        </button>
+    </div>
+    {% endif %}
     <div class="contestant-container">
         {% for festival in festivals %}
-        {% if loop.index == 1 %}
-        <div class="contestant-item first" id="festival-{{ festival[0] }}">
-            <div class="contestant-item-body">
-                <div class="order medal">
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732190419/tn6ajfypn79vno49kbmu.png" />
-                </div>
-                <p>{{ festival[1] }}</p>
-            </div>
-            <div class="contestant-item-footer">
-                <div class='contestant-item-footer-likes'>
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
-                        style="height:25px" />
-                    <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
-                </div>
-                <div class='contestant-item-footer-btns'>
-                    <button class="contestant-item-footer-btn view"><i class="fa-solid fa-magnifying-glass"></i>
-                        <span>Xem</span></button>
-                    <div class="vote-icon" data-id="{{ festival[0] }}"
-                        data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-                        {% if festival[0] in user_votes %}
-                        <button class="contestant-item-footer-btn like"><i class="fa-solid fa-heart"></i>
-                        </button>
-                        {% else %}
-                        <button class="contestant-item-footer-btn unlike"><i class="fa-solid fa-heart-crack"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% elif loop.index == 2 %}
-        <div class="contestant-item second" id="festival-{{ festival[0] }}">
-            <div class="contestant-item-body">
-                <div class="order medal">
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732190421/lemjwaxnvo2skzqo04rm.png" />
-                </div>
-                <p>{{ festival[1] }}</p>
-            </div>
-            <div class="contestant-item-footer">
-                <div class='contestant-item-footer-likes'>
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
-                        style="height:25px" />
-                    <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
-                </div>
-                <div class='contestant-item-footer-btns'>
-                    <button class="contestant-item-footer-btn view"><i class="fa-solid fa-magnifying-glass"></i>
-                        <span>Xem</span></button>
-                    <div class="vote-icon" data-id="{{ festival[0] }}"
-                        data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-                        {% if festival[0] in user_votes %}
-                        <button class="contestant-item-footer-btn like"><i class="fa-solid fa-heart"></i>
-                        </button>
-                        {% else %}
-                        <button class="contestant-item-footer-btn unlike"><i class="fa-solid fa-heart-crack"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% elif loop.index == 3 %}
-        <div class="contestant-item third" id="festival-{{ festival[0] }}">
-            <div class="contestant-item-body">
-                <div class="order medal">
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732191352/qqixrdjvwphpokcy9npe.png" />
-                </div>
-                <p>{{ festival[1] }}</p>
-            </div>
-            <div class="contestant-item-footer">
-                <div class='contestant-item-footer-likes'>
-                    <img alt=""
-                        src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
-                        style="height:25px" />
-                    <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
-                </div>
-                <div class='contestant-item-footer-btns'>
-                    <button class="contestant-item-footer-btn view"><i class="fa-solid fa-magnifying-glass"></i>
-                        <span>Xem</span></button>
-                    <div class="vote-icon" data-id="{{ festival[0] }}"
-                        data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-                        {% if festival[0] in user_votes %}
-                        <button class="contestant-item-footer-btn like"><i class="fa-solid fa-heart"></i>
-                        </button>
-                        {% else %}
-                        <button class="contestant-item-footer-btn unlike"><i class="fa-solid fa-heart-crack"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% else %}
         <div class="order">
             <div class="contestant-item" id="festival-{{ festival[0] }}">
                 <div class="contestant-item-body">
@@ -139,15 +53,21 @@
                     <p>{{ festival[1] }}</p>
                 </div>
                 <div class="contestant-item-footer">
+                    {% if session['user_code'] == 'ADMIN' %}
                     <div class='contestant-item-footer-likes'>
                         <img alt=""
                             src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
                             style="height:25px" />
                         <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
                     </div>
+                    {% else %}
+                    <div class='contestant-item-footer-likes'>
+                        <img alt=""
+                            src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
+                            style="height:25px" />
+                    </div>
                     <div class='contestant-item-footer-btns'>
-                        <button class="contestant-item-footer-btn view"><i class="fa-solid fa-magnifying-glass"></i>
-                            <span>Xem</span></button>
+                        {% if is_open == 2 %}
                         <div class="vote-icon" data-id="{{ festival[0] }}"
                             data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
                             {% if festival[0] in user_votes %}
@@ -158,11 +78,23 @@
                             </button>
                             {% endif %}
                         </div>
+                        {% else %}
+                        <div class="vote-icon hidden" data-id="{{ festival[0] }}"
+                            data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
+                            {% if festival[0] in user_votes %}
+                            <button class="contestant-item-footer-btn like"><i class="fa-solid fa-heart"></i>
+                            </button>
+                            {% else %}
+                            <button class="contestant-item-footer-btn unlike"><i class="fa-solid fa-heart-crack"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        {% endif %}
         {% endfor %}
     </div>
 
@@ -176,14 +108,23 @@
             </div>
         </div>
     </div>
-
+    {% if session['user_code'] != 'ADMIN' %}
+    {% if is_open == 2 %}
     <div class="voting-expired-popup hidden">
         <div class="voting-expired-content">
             <p>Thời gian bình chọn đã kết thúc!</p>
             <button class="voting-expired-popup-close">Đóng</button>
         </div>
     </div>
-
+    {% else %}
+    <div class="voting-expired-popup">
+        <div class="voting-expired-content">
+            <p>Thời gian bình chọn đã kết thúc!</p>
+            <button class="voting-expired-popup-close">Đóng</button>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
 </body>
 
 </html>

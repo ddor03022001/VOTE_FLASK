@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Nhân Viên</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/detail_checkin.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <div class="info-box">
+            <h1>Thông Tin Nhân Viên</h1>
+            <div class="info-item">
+                <strong>Tên nhân viên:</strong>
+                <p>{{ user[1] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Mã nhân viên:</strong>
+                <p>{{ user[2] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Chức vụ:</strong>
+                <p>{{ user[4] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Số điện thoại:</strong>
+                <p>{{ user[3] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Số phòng:</strong>
+                <p>{{ user[7] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Số xe:</strong>
+                <p>{{ user[8] }}</p>
+            </div>
+            <div class="info-item">
+                <strong>Công ty:</strong>
+                <p>{{ user[5] }}</p>
+            </div>
+            {% if user[6] == false %}
+            <div class="text-detail hidden">Đã tham gia thành công</div>
+            <button class="confirm" data-id="{{ user[0] }}" type="submit">Ấn nút xác nhận tham gia</button>
+            {% else %}
+            <div class="text-detail">Đã tham gia thành công</div>
+            <button class="confirm hidden" data-id="{{ user[0] }}" type="submit">Ấn nút xác nhận tham gia</button>
+            {% endif %}
+        </div>
+    </div>
+</body>
+<script>
+    $('.confirm').on('click', function () {
+        const $icon = $(this);
+        const user_id = $icon.data('id');
+        console.log("check userID: ", user_id);
+        $.ajax({
+            url: '/get_user_confirm',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ user_id: user_id }),
+            success: function (response) {
+                if (response.action === 'success') {
+                    $('.confirm').addClass('hidden');
+                    $('.text-detail').removeClass('hidden');
+                }
+            },
+            error: function () {
+                alert('Có lỗi xảy ra! Vui lòng thử lại.');
+            }
+        });
+    });
+</script>
+
+</html>

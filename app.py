@@ -16,9 +16,6 @@ SECRET_KEY = 'mysecretkey'
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
-# Setting Password
-pwd_context = CryptContext(schemes=["pbkdf2_sha512"])
-
 # Connect PostgreSQL
 def get_db_connection():
     conn = psycopg2.connect(
@@ -40,6 +37,61 @@ def close_db_connection(response):
         g.db_connection.close()
     return response
 
+def get_is_open_from_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT is_open FROM status_vote_festival WHERE id = 1')
+    is_open = cursor.fetchone()[0] 
+    cursor.close()
+    conn.close()
+    return is_open
+
+@app.route('/get_open_vote', methods=['POST'])
+def get_open_vote():
+    isOpen = request.json.get('is_open')
+    if not isOpen:
+        return jsonify({"error": "Invalid request"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if isOpen == 1:
+        cursor.execute('UPDATE status_vote_festival SET is_open = 2 WHERE id = 1')
+        action = 'end'
+    else:
+        cursor.execute('UPDATE status_vote_festival SET is_open = 1 WHERE id = 1')
+        action = 'start'
+        
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    is_open = get_is_open_from_db()
+
+    socketio.emit('open_vote', {
+        'update_is_open': is_open,
+        'action': action
+    }, room=None)
+
+    return jsonify({"is_open": is_open, "action": action})
+
+@app.route('/get_user_confirm', methods=['POST'])
+def get_user_confirm():
+    userId = request.json.get('user_id')
+    if not userId:
+        return jsonify({"error": "Invalid request"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("UPDATE res_user_vote_festival SET has_vote = True WHERE id = %s", (userId,))
+        
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"action": "success"})
+
 # Route checkin
 @app.route('/checkin', methods=['GET', 'POST'])
 def Checkin():
@@ -54,12 +106,12 @@ def Checkin():
         conn = g.db_connection
         cur = conn.cursor()
         
-        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE phone_number = %s", (login,))
+        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE phone_number = %s", (login,))
         user = cur.fetchone()
         cur.close()
 
         if user:
-            return user[1] 
+            return render_template('detail_checkin.html', user=user)
         else:
             error = "Đăng nhập thất bại! Số điện thoại không đúng."
             return render_template('checkin.html', error=error)
@@ -70,27 +122,30 @@ def Checkin():
 @app.route('/', methods=['GET', 'POST'])
 def login():
     error = None
+    session.pop('user_id', None) 
+    session.pop('user_login', None) 
+    session.pop('user_code', None)  
     if request.method == 'POST':
         login = request.form.get('login')
-        password = request.form.get('password')
         
-        if not login or not password:
-            error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!"
+        if not login:
+            error = "Vui lòng nhập đầy đủ số điện thoại!"
             return render_template('login.html', error=error)
 
         conn = g.db_connection
         cur = conn.cursor()
         
-        cur.execute("SELECT id, login, password FROM res_users WHERE login = %s", (login,))
+        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE phone_number = %s", (login,))
         user = cur.fetchone()
         cur.close()
 
-        if user and pwd_context.verify(password, user[2]):
+        if user and user[6]:
+            session['user_code'] = user[2]
             session['user_id'] = user[0]
             session['user_login'] = user[1]
-            return redirect(url_for('index'))  
+            return redirect(url_for('index')) 
         else:
-            error = "Đăng nhập thất bại! Tên đăng nhập hoặc mật khẩu không đúng."
+            error = "Đăng nhập thất bại! Số điện thoại không đúng."
             return render_template('login.html', error=error)
 
     return render_template('login.html', error=error)
@@ -98,7 +153,8 @@ def login():
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('user_id', None) 
-    session.pop('user_login', None)  
+    session.pop('user_login', None) 
+    session.pop('user_code', None)   
     return redirect(url_for('login'))  
 
 @app.route('/index')
@@ -119,12 +175,13 @@ def index():
         user_votes[row[0]] = True
 
     cur.close()
-    if festivals:
-        festivals_sorted = sorted(festivals, key=lambda x: x[2], reverse=True)
-    else:
-        festivals_sorted = []
+    # if festivals:
+    #     festivals_sorted = sorted(festivals, key=lambda x: x[2], reverse=True)
+    # else:
+    #     festivals_sorted = []
+    is_open = get_is_open_from_db()
 
-    return render_template('index.html', festivals=festivals_sorted, user_votes=user_votes)
+    return render_template('index.html', festivals=festivals, user_votes=user_votes, is_open=is_open)
 
 @app.route('/vote', methods=['POST'])
 def vote():
@@ -183,7 +240,7 @@ def get_likes():
     list_user_votes = [user_id[0] for user_id in user_ids] 
 
     if list_user_votes:
-        cur.execute("SELECT login FROM res_users WHERE id IN %s", (tuple(list_user_votes),))
+        cur.execute("SELECT name FROM res_user_vote_festival WHERE id IN %s", (tuple(list_user_votes),))
         user_logins = cur.fetchall()
     else:
         user_logins = []

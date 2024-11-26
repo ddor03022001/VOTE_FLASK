@@ -1,39 +1,24 @@
 <!DOCTYPE html>
-<!-- Coding By CodingNepal - www.codingnepalweb.com -->
 <html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glassmorphism Login Form | CodingNepal</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <title>Tham Gia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkin.css') }}">
 </head>
 
 <body>
-    <div class="wrapper">
-        <form class="form" action="/" method="POST">
-            <h2>Login</h2>
+    <div class="login-container">
+        <div class="logo">
+            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo">
+        </div>
+        <form class="login-form" action="/" method="POST">
             {% if error %}
             <p style="color: red;">{{ error }}</p>
             {% endif %}
-            <div class="input-field">
-                <input class="user-name" type="text" name="login" id="login" required><br><br>
-                <label>Enter your email</label>
-            </div>
-            <div class="input-field">
-                <input class="user-name" type="password" name="password" id="password" required><br><br>
-                <label>Enter your password</label>
-            </div>
-            <div class="forget">
-                <label for="remember">
-                    <p></p>
-                </label>
-                <a href="#"></a>
-            </div>
-            <button class="submit" type="submit">Log in </button>
-            <div class="register">
-                <p></p>
-            </div>
+            <input type="text" id="login" name="login" placeholder="Số Điện Thoại">
+            <button type="submit">Xác Nhận</button>
         </form>
     </div>
 </body>
