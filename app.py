@@ -39,6 +39,7 @@ def close_db_connection(response):
         g.db_connection.close()
     return response
 
+# Get vote status
 def get_is_open_from_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -48,6 +49,7 @@ def get_is_open_from_db():
     conn.close()
     return is_open
 
+# update vote status
 @app.route('/get_open_vote', methods=['POST'])
 def get_open_vote():
     isOpen = request.json.get('is_open')
@@ -77,6 +79,7 @@ def get_open_vote():
 
     return jsonify({"is_open": is_open, "action": action})
 
+# Update user confirm festival
 @app.route('/get_user_confirm', methods=['POST'])
 def get_user_confirm():
     userId = request.json.get('user_id')
@@ -249,16 +252,6 @@ def get_likes():
     cur.close()
         
     return jsonify({"status": "success", "likes": user_logins})
-
-# Deadline vote
-voting_deadline = datetime(2024, 11, 22, 14, 32, 00)
-
-@app.route('/check_voting_status', methods=['GET'])
-def check_voting_status():
-    current_time = datetime.now()
-    if current_time > voting_deadline:
-        return jsonify({"status": "expired"})
-    return jsonify({"status": "active"})
 
 # Join room when user login success
 @socketio.on('join_room')
