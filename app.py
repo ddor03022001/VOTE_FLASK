@@ -205,15 +205,20 @@ def vote():
     user_id = session['user_id']
     cur.execute("SELECT * FROM vote_festival_model_line WHERE user_id = %s AND vote_festival_model_id = %s", (user_id, vote_id))
     existing_vote = cur.fetchone()
+    cur.execute("SELECT * FROM vote_festival_model_line WHERE user_id = %s", (user_id,))
+    number_vote = cur.fetchall()
 
     if existing_vote:
         cur.execute("DELETE FROM vote_festival_model_line WHERE user_id = %s AND vote_festival_model_id = %s", (user_id, vote_id))
         cur.execute("UPDATE vote_festival_model SET vote_number = vote_number - 1 WHERE id = %s", (vote_id,))
         action = 'removed'
     else:
-        cur.execute("INSERT INTO vote_festival_model_line (user_id, vote_festival_model_id) VALUES (%s, %s)", (user_id, vote_id))
-        cur.execute("UPDATE vote_festival_model SET vote_number = vote_number + 1 WHERE id = %s", (vote_id,))
-        action = 'added'
+        if len(number_vote) >= 1:
+            action = 'warning'
+        else:
+            cur.execute("INSERT INTO vote_festival_model_line (user_id, vote_festival_model_id) VALUES (%s, %s)", (user_id, vote_id))
+            cur.execute("UPDATE vote_festival_model SET vote_number = vote_number + 1 WHERE id = %s", (vote_id,))
+            action = 'added'
 
     cur.execute("SELECT vote_number FROM vote_festival_model WHERE id = %s", (vote_id,))
     updated_vote_number = cur.fetchone()[0]

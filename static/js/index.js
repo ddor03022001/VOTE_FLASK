@@ -2,6 +2,9 @@ $(document).ready(function () {
     $('.voting-expired-popup-close').on('click', function () {
         $('.voting-expired-popup').addClass('hidden');
     });
+    $('.warning-popup-close').on('click', function () {
+        $('.warning-popup').addClass('hidden');
+    });
     const socket = io.connect();
 
     socket.on('update_vote', function (data) {
@@ -75,6 +78,8 @@ $(document).ready(function () {
             </button>                                       
         `);
                     $icon.data('voted', 'true');
+                } else if (response.action === 'warning') {
+                    $('.warning-popup').removeClass('hidden');
                 } else {
                     $icon.html(`
             <button class="contestant-item-footer-btn unlike">
