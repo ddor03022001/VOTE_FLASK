@@ -110,8 +110,8 @@ def Checkin():
 
         conn = g.db_connection
         cur = conn.cursor()
-        
-        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE phone_number = %s", (login,))
+        login = login.replace(' ', '') 
+        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
         user = cur.fetchone()
         cur.close()
 
@@ -126,10 +126,7 @@ def Checkin():
 # Route login
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    error = None
-    session.pop('user_id', None) 
-    session.pop('user_login', None) 
-    session.pop('user_code', None)  
+    error = None 
     if request.method == 'POST':
         login = request.form.get('login')
         
@@ -140,7 +137,8 @@ def login():
         conn = g.db_connection
         cur = conn.cursor()
         
-        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE phone_number = %s", (login,))
+        login = login.replace(' ', '') 
+        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
         user = cur.fetchone()
         cur.close()
 
@@ -148,7 +146,11 @@ def login():
             session['user_id'] = user[0]
             session['user_login'] = user[1]
             session['user_code'] = user[2]
-            return redirect(url_for('index')) 
+            return redirect(url_for('index'))
+        elif user and not user[6]:
+            error = "Đăng nhập thất bại! Số điện thoại không đăng kí tham gia."
+            return render_template('login.html', error=error)
+
         else:
             error = "Đăng nhập thất bại! Số điện thoại không đúng."
             return render_template('login.html', error=error)
