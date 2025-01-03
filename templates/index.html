@@ -15,6 +15,7 @@
 </head>
 
 <body>
+    <div class="background"></div>
     <!-- Navigation Bar -->
     <div class="navbar">
         {% if session['user_login'] %}
@@ -46,10 +47,12 @@
         {% for festival in festivals %}
         <div class="order">
             <div class="contestant-item" id="festival-{{ festival[0] }}">
+                <img src="https://images2.thanhnien.vn/528068263637045248/2024/1/25/e093e9cfc9027d6a142358d24d2ee350-65a11ac2af785880-17061562929701875684912.jpg"
+                    alt="Tiết mục 1">
                 <div class="contestant-item-body">
-                    <div class="order">
+                    <!-- <div class="order">
                         <span>{{ loop.index }}</span>
-                    </div>
+                    </div> -->
                     <p>{{ festival[1] }}</p>
                 </div>
                 <div class="contestant-item-footer">
