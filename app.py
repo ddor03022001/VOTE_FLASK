@@ -1,6 +1,7 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session, jsonify
 from passlib.context import CryptContext
 from flask_cors import CORS
+from psycopg2 import pool
 import psycopg2
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit, join_room, leave_room
@@ -18,15 +19,11 @@ SECRET_KEY = 'mysecretkey'
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
+db_pool = pool.SimpleConnectionPool(1, 3, host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASS)
+
 # Connect PostgreSQL
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=DB_HOST,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS
-    )
-    return conn
+    return db_pool.getconn()
 
 @app.before_request
 def connect_to_db():
@@ -36,18 +33,21 @@ def connect_to_db():
 @app.after_request
 def close_db_connection(response):
     if hasattr(g, 'db_connection'):
-        g.db_connection.close()
+        db_pool.putconn(g.db_connection)
     return response
 
 # Get vote status
 def get_is_open_from_db():
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT is_open FROM status_vote_festival WHERE id = 1')
-    is_open = cursor.fetchone()[0] 
-    cursor.close()
-    conn.close()
-    return is_open
+    try:
+        cursor = conn.cursor()
+        cursor.execute('SELECT is_open FROM status_vote_festival WHERE id = 1')
+        is_open = cursor.fetchone()[0]
+        cursor.close()
+        return is_open
+    finally:
+        # Trả kết nối lại pool
+        db_pool.putconn(conn)
 
 # update vote status
 @app.route('/get_open_vote', methods=['POST'])
@@ -68,7 +68,8 @@ def get_open_vote():
         
     conn.commit()
     cursor.close()
-    conn.close()
+    
+    db_pool.putconn(conn)
 
     is_open = get_is_open_from_db()
 
@@ -93,7 +94,6 @@ def get_user_confirm():
         
     conn.commit()
     cursor.close()
-    conn.close()
 
     return jsonify({"action": "success"})
 
@@ -108,18 +108,23 @@ def Checkin():
             error = "Vui lòng nhập đầy đủ số điện thoại!"
             return render_template('checkin.html', error=error)
 
-        conn = g.db_connection
-        cur = conn.cursor()
-        login = login.replace(' ', '') 
-        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
-        user = cur.fetchone()
-        cur.close()
+        conn = None
+        try:
+            conn = db_pool.getconn()  # Lấy kết nối từ pool
+            cur = conn.cursor()
+            login = login.replace(' ', '') 
+            cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
+            user = cur.fetchone()
+            cur.close()
 
-        if user:
-            return render_template('detail_checkin.html', user=user)
-        else:
-            error = "Đăng nhập thất bại! Số điện thoại không đúng."
-            return render_template('checkin.html', error=error)
+            if user:
+                return render_template('detail_checkin.html', user=user)
+            else:
+                error = "Đăng nhập thất bại! Số điện thoại không đúng."
+                return render_template('checkin.html', error=error)
+        finally:
+            if conn:
+                db_pool.putconn(conn)  # Trả kết nối về pool
 
     return render_template('checkin.html', error=error)
 
@@ -134,26 +139,31 @@ def login():
             error = "Vui lòng nhập đầy đủ số điện thoại!"
             return render_template('login.html', error=error)
 
-        conn = g.db_connection
-        cur = conn.cursor()
-        
-        login = login.replace(' ', '') 
-        cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
-        user = cur.fetchone()
-        cur.close()
-
-        if user and user[6]:
-            session['user_id'] = user[0]
-            session['user_login'] = user[1]
-            session['user_code'] = user[2]
-            return redirect(url_for('index'))
-        elif user and not user[6]:
-            error = "Đăng nhập thất bại! Số điện thoại không đăng kí tham gia."
-            return render_template('login.html', error=error)
-
-        else:
-            error = "Đăng nhập thất bại! Số điện thoại không đúng."
-            return render_template('login.html', error=error)
+        login = login.replace(' ', '')  # Chuẩn hóa số điện thoại
+        conn = None
+        try:
+            conn = db_pool.getconn()  # Lấy kết nối từ pool
+            print(f"Active connections:  {len(db_pool._pool)}")
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT id, name, code, phone_number, position, company_name, has_vote 
+                FROM res_user_vote_festival 
+                WHERE REPLACE(phone_number, ' ', '') = %s
+            """, (login,))
+            user = cur.fetchone()
+            cur.close()
+            
+            if user:
+                session['user_id'] = user[0]
+                session['user_login'] = user[1]
+                session['user_code'] = user[2]
+                return redirect(url_for('index'))
+            else:
+                error = "Đăng nhập thất bại! Số điện thoại không đúng."
+        finally:
+            if conn:
+                db_pool.putconn(conn)  # Trả kết nối về pool
+                print(f"Active connections 1:  {len(db_pool._pool)}")
 
     return render_template('login.html', error=error)
 
@@ -169,26 +179,37 @@ def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))  
 
-    conn = g.db_connection
-    cur = conn.cursor()
+    conn = None
+    try:
+        conn = db_pool.getconn()  # Lấy kết nối từ pool
+        cur = conn.cursor()
 
-    cur.execute("SELECT id, name, vote_number FROM vote_festival_model")
-    festivals = cur.fetchall()
+        # Lấy danh sách lễ hội
+        cur.execute("""
+            SELECT id, name, vote_number, numerical 
+            FROM vote_festival_model
+        """)
+        festivals = cur.fetchall()
 
-    user_id = session['user_id']
-    user_votes = {}
-    cur.execute("SELECT vote_festival_model_id FROM vote_festival_model_line WHERE user_id = %s", (user_id,))
-    for row in cur.fetchall():
-        user_votes[row[0]] = True
+        # Lấy danh sách các mục đã bầu của user
+        user_id = session['user_id']
+        cur.execute("""
+            SELECT vote_festival_model_id 
+            FROM vote_festival_model_line 
+            WHERE user_id = %s
+        """, (user_id,))
+        user_votes = {row[0]: True for row in cur.fetchall()}
 
-    cur.close()
-    # if festivals:
-    #     festivals_sorted = sorted(festivals, key=lambda x: x[2], reverse=True)
-    # else:
-    #     festivals_sorted = []
-    is_open = get_is_open_from_db()
+        cur.close()
 
-    return render_template('index.html', festivals=festivals, user_votes=user_votes, is_open=is_open)
+        # Sắp xếp và lấy trạng thái mở/đóng
+        festivals_sorted = sorted(festivals, key=lambda x: x[3]) if festivals else []
+        is_open = get_is_open_from_db()  # Truy vấn trạng thái riêng
+    finally:
+        if conn:
+            db_pool.putconn(conn)  # Trả kết nối về pool
+
+    return render_template('index.html', festivals=festivals_sorted, user_votes=user_votes, is_open=is_open)
 
 @app.route('/vote', methods=['POST'])
 def vote():

@@ -47,8 +47,17 @@
         {% for festival in festivals %}
         <div class="order">
             <div class="contestant-item" id="festival-{{ festival[0] }}">
-                <img src="https://images2.thanhnien.vn/528068263637045248/2024/1/25/e093e9cfc9027d6a142358d24d2ee350-65a11ac2af785880-17061562929701875684912.jpg"
-                    alt="Tiết mục 1">
+                {% if festival[3] == 1 %}
+                <img src="../static/images/team1.PNG" alt="Team 1">
+                {% elif festival[3] == 2 %}
+                <img src="../static/images/team2.PNG" alt="Team 2">
+                {% elif festival[3] == 3 %}
+                <img src="../static/images/team3.jpg" alt="Team 3">
+                {% elif festival[3] == 4 %}
+                <img src="../static/images/team4.jpeg" alt="Team 4">
+                {% else %}
+                <img src="../static/images/team5.PNG" alt="Team 5">
+                {% endif %}
                 <div class="contestant-item-body">
                     <!-- <div class="order">
                         <span>{{ loop.index }}</span>
@@ -58,16 +67,16 @@
                 <div class="contestant-item-footer">
                     {% if session['user_code'] == 'ADMIN' %}
                     <div class='contestant-item-footer-likes'>
-                        <img alt=""
+                        <!-- <img alt=""
                             src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
-                            style="height:25px" />
-                        <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }}</span>
+                            style="height:25px" /> -->
+                        <span class="like-count" data-id="{{ festival[0] }}">{{ festival[2] }} Lượt thích</span>
                     </div>
                     {% else %}
                     <div class='contestant-item-footer-likes'>
-                        <img alt=""
+                        <!-- <img alt=""
                             src="https://res.cloudinary.com/dhrpdnd8m/image/upload/v1732188613/ikfqqfunrruak4grzm5l.png"
-                            style="height:25px" />
+                            style="height:25px" /> -->
                     </div>
                     <div class='contestant-item-footer-btns'>
                         {% if is_open == 2 %}

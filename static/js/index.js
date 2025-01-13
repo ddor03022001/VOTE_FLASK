@@ -10,7 +10,7 @@ $(document).ready(function () {
     socket.on('update_vote', function (data) {
         const $row = $(`#festival-${data.vote_festival_model_id}`);
         const $likeCount = $row.find('.like-count');
-        $likeCount.text(`${data.vote_number}`);
+        $likeCount.text(`${data.vote_number} Lượt thích`);
     });
 
     socket.on('open_vote', function (data) {

@@ -5,22 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tham Gia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo">
-        </div>
+    <div class="wrapper">
         <form class="login-form" action="/checkin" method="POST">
+            <div class="logo">
+                <img src="https://home.seacorp.vn/web/image/res.company/1/logo" style="width: 180px;"
+                    alt="SEACORP Logo">
+            </div>
             {% if error %}
             <p style="color: red;">{{ error }}</p>
             {% endif %}
-            <input type="text" id="checkin" name="checkin" placeholder="Số Điện Thoại">
+            <div class="input-field">
+                <input type="text" id="checkin" name="checkin" required>
+                <label>Enter your phone number</label>
+            </div>
             <button type="submit">Tham Gia</button>
         </form>
     </div>
+    <!-- <div class="login-container">
+        <div class="logo">
+            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo">
+        </div>
+        <form class="login-form" action="/" method="POST">
+            {% if error %}
+            <p style="color: red;">{{ error }}</p>
+            {% endif %}
+            <input type="text" id="login" name="login" placeholder="Số Điện Thoại">
+            <button type="submit">Xác Nhận</button>
+        </form>
+    </div> -->
 </body>
 
 </html>
