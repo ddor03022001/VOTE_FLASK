@@ -2,7 +2,6 @@ from flask import Flask, render_template, g, request, redirect, url_for, session
 from flask_cors import CORS
 from psycopg2.pool import ThreadedConnectionPool
 from datetime import datetime, timedelta
-from flask_socketio import SocketIO, emit, join_room, leave_room
 from dotenv import load_dotenv
 import os
 
@@ -11,7 +10,6 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, async_mode='gevent')
 
 # Configuration from environment variables
 DB_HOST = os.getenv('DB_HOST', 'localhost')
@@ -22,7 +20,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change-this-in-production')
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
-# Connection pool: min=5, max=20 connections để chịu được nhiều user đồng thời
+# Connection pool: min=5, max=20 connections
 db_pool = ThreadedConnectionPool(5, 20, host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASS)
 
 # Connect PostgreSQL
@@ -52,37 +50,92 @@ def get_is_open_from_db():
     finally:
         db_pool.putconn(conn)
 
-# Update vote status
-@app.route('/get_open_vote', methods=['POST'])
-def get_open_vote():
-    isOpen = request.json.get('is_open')
-    if not isOpen:
-        return jsonify({"error": "Invalid request"}), 400
+# ============================================
+# API ENDPOINTS
+# ============================================
 
+# API: Get ranking data
+@app.route('/api/ranking', methods=['GET'])
+def api_ranking():
     conn = get_db_connection()
     try:
         cursor = conn.cursor()
-
-        if isOpen == 1:
-            cursor.execute('UPDATE status_vote_festival SET is_open = 2 WHERE id = 1')
-            action = 'end'
-        else:
-            cursor.execute('UPDATE status_vote_festival SET is_open = 1 WHERE id = 1')
-            action = 'start'
-            
-        conn.commit()
+        cursor.execute("""
+            SELECT id, name, vote_number, numerical 
+            FROM vote_festival_model 
+            ORDER BY vote_number DESC, numerical ASC
+        """)
+        teams = cursor.fetchall()
         cursor.close()
+        
+        result = []
+        for idx, team in enumerate(teams):
+            result.append({
+                'id': team[0],
+                'name': team[1],
+                'votes': team[2],
+                'rank': idx + 1
+            })
+        
+        return jsonify({'teams': result, 'is_open': get_is_open_from_db()})
     finally:
         db_pool.putconn(conn)
 
+# API: Start voting (Admin)
+@app.route('/api/start_vote', methods=['POST'])
+def api_start_vote():
+    if 'user_id' not in session or session.get('user_code') != 'ADMIN':
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE status_vote_festival SET is_open = 2 WHERE id = 1')
+        conn.commit()
+        cursor.close()
+        return jsonify({"status": "success", "is_open": 2})
+    finally:
+        db_pool.putconn(conn)
+
+# API: End voting (Admin)
+@app.route('/api/end_vote', methods=['POST'])
+def api_end_vote():
+    if 'user_id' not in session or session.get('user_code') != 'ADMIN':
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute('UPDATE status_vote_festival SET is_open = 1 WHERE id = 1')
+        conn.commit()
+        cursor.close()
+        return jsonify({"status": "success", "is_open": 1})
+    finally:
+        db_pool.putconn(conn)
+
+# API: Get vote status
+@app.route('/api/status', methods=['GET'])
+def api_status():
+    return jsonify({"is_open": get_is_open_from_db()})
+
+# ============================================
+# ADMIN ROUTES
+# ============================================
+
+# Admin: Leaderboard page
+@app.route('/admin/leaderboard')
+def admin_leaderboard():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    if session.get('user_code') != 'ADMIN':
+        return redirect(url_for('index'))
+    
     is_open = get_is_open_from_db()
+    return render_template('leaderboard.html', is_open=is_open)
 
-    socketio.emit('open_vote', {
-        'update_is_open': is_open,
-        'action': action
-    }, room=None)
-
-    return jsonify({"is_open": is_open, "action": action})
+# ============================================
+# USER ROUTES
+# ============================================
 
 # Update user confirm festival
 @app.route('/get_user_confirm', methods=['POST'])
@@ -161,6 +214,9 @@ def login():
                 session['user_id'] = user[0]
                 session['user_login'] = user[1]
                 session['user_code'] = user[2]
+                # Redirect admin to leaderboard
+                if user[2] == 'ADMIN':
+                    return redirect(url_for('admin_leaderboard'))
                 return redirect(url_for('index'))
             else:
                 error = "Đăng nhập thất bại! Số điện thoại không đúng."
@@ -191,6 +247,7 @@ def index():
         cur.execute("""
             SELECT id, name, vote_number, numerical 
             FROM vote_festival_model
+            ORDER BY numerical ASC
         """)
         festivals = cur.fetchall()
 
@@ -205,19 +262,21 @@ def index():
 
         cur.close()
 
-        # Sắp xếp và lấy trạng thái mở/đóng
-        festivals_sorted = sorted(festivals, key=lambda x: x[3]) if festivals else []
         is_open = get_is_open_from_db()
     finally:
         if conn:
             db_pool.putconn(conn)
 
-    return render_template('index.html', festivals=festivals_sorted, user_votes=user_votes, is_open=is_open)
+    return render_template('index.html', festivals=festivals, user_votes=user_votes, is_open=is_open)
 
 @app.route('/vote', methods=['POST'])
 def vote():
     if 'user_id' not in session:
         return jsonify({"error": "Unauthorized"}), 401
+
+    # Check if voting is open
+    if get_is_open_from_db() != 2:
+        return jsonify({"error": "Voting is closed", "action": "closed"}), 400
 
     vote_id = request.json.get('vote_id')
     if not vote_id:
@@ -250,46 +309,7 @@ def vote():
 
     cur.close()
 
-    socketio.emit('update_vote', {
-        'vote_festival_model_id': vote_id,
-        'vote_number': updated_vote_number,
-        'action': action
-    }, room=None)
-
     return jsonify({"vote_number": updated_vote_number, "action": action})
 
-@app.route('/get_likes', methods=['POST'])
-def get_likes():
-    if 'user_id' not in session:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    vote_id = request.json.get('vote_id')
-    if not vote_id:
-        return jsonify({"error": "Invalid request"}), 400
-
-    conn = g.db_connection
-    cur = conn.cursor()
-
-    cur.execute("SELECT user_id FROM vote_festival_model_line WHERE vote_festival_model_id = %s", (vote_id,))
-    user_ids = cur.fetchall()
-
-    list_user_votes = [user_id[0] for user_id in user_ids] 
-
-    if list_user_votes:
-        cur.execute("SELECT name FROM res_user_vote_festival WHERE id IN %s", (tuple(list_user_votes),))
-        user_logins = cur.fetchall()
-    else:
-        user_logins = []
-    cur.close()
-        
-    return jsonify({"status": "success", "likes": user_logins})
-
-# Join room when user login success
-@socketio.on('join_room')
-def on_join(data):
-    user_id = data['user_id']
-    join_room(str(user_id))
-
 if __name__ == '__main__':
-    # Production: debug=False
-    socketio.run(app, debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)

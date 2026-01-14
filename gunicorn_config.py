@@ -1,4 +1,4 @@
-# Gunicorn configuration file for Flask + SocketIO
+# Gunicorn configuration file for Flask
 # Chạy: gunicorn -c gunicorn_config.py app:app
 
 import multiprocessing
@@ -7,14 +7,13 @@ import multiprocessing
 bind = "0.0.0.0:5000"
 
 # Worker configuration
-# Số workers = (2 * CPU cores) + 1
 workers = multiprocessing.cpu_count() * 2 + 1
 
-# Sử dụng gevent cho WebSocket support
-worker_class = "geventwebsocket.gunicorn.workers.GeventWebSocketWorker"
+# Use sync workers (no longer need gevent for websocket)
+worker_class = "sync"
 
-# Số connections mỗi worker có thể xử lý
-worker_connections = 1000
+# Threads per worker
+threads = 2
 
 # Timeout (seconds)
 timeout = 120
@@ -23,15 +22,12 @@ timeout = 120
 keepalive = 5
 
 # Logging
-accesslog = "access.log"
-errorlog = "error.log"
+accesslog = "-"
+errorlog = "-"
 loglevel = "info"
 
-# Reload khi code thay đổi (chỉ dùng cho development)
+# Reload khi code thay đổi (development only)
 reload = False
 
 # Process naming
 proc_name = "vote_flask"
-
-# Preload app để tiết kiệm memory
-preload_app = True

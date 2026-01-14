@@ -4,215 +4,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bình Chọn Gala 2025</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Bình Chọn - Gala 2025</title>
+    <link rel="icon" href="https://home.seacorp.vn/web/image/res.company/1/logo">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
         integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/gala.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 </head>
 
 <body>
-    <!-- Particles Background -->
-    <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
+    <!-- Stars Background -->
+    <div class="stars-container">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
     </div>
 
-    <!-- TikTok-style Swipe Container -->
-    <div class="swipe-container">
+    <!-- Header -->
+    <header class="vote-header">
+        <div class="header-left">
+            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="Logo" class="header-logo">
+        </div>
+        <h1 class="text-shimmer">GALA 2025</h1>
+        <form action="{{ url_for('logout') }}" method="POST" class="header-right">
+            <button type="submit" class="logout-btn-icon" title="Đăng xuất">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </form>
+    </header>
+
+    <!-- User Info -->
+    <div class="user-greeting">
+        <span>Xin chào, <strong>{{ session['user_login'] }}</strong></span>
+    </div>
+
+    <!-- Title -->
+    <div class="page-title">
+        <h2>Chọn tiết mục yêu thích</h2>
+        <p>Vuốt để xem và bình chọn</p>
+    </div>
+
+    <!-- Team Cards Container -->
+    <div class="cards-container" id="cardsContainer">
         {% for festival in festivals %}
-        <section class="swipe-slide" id="festival-{{ festival[0] }}">
-            <!-- Background Image -->
-            <div class="slide-background">
-                {% if festival[3] == 1 %}
-                <img src="../static/images/team1.PNG" alt="Team 1">
-                {% elif festival[3] == 2 %}
-                <img src="../static/images/team2.PNG" alt="Team 2">
-                {% elif festival[3] == 3 %}
-                <img src="../static/images/team3.jpg" alt="Team 3">
-                {% elif festival[3] == 4 %}
-                <img src="../static/images/team4.jpeg" alt="Team 4">
+        <article class="team-card" id="festival-{{ festival[0] }}" data-index="{{ loop.index }}">
+            <div class="card-inner glass-card">
+                <!-- Card Number -->
+                <div class="card-number">{{ loop.index }}</div>
+
+                <!-- Team Name -->
+                <h3 class="card-title">{{ festival[1] }}</h3>
+
+                <!-- Decoration -->
+                <div class="card-decoration">
+                    <span class="deco-star">✦</span>
+                    <span class="deco-line"></span>
+                    <span class="deco-star">✦</span>
+                </div>
+
+                <!-- Vote Button -->
+                {% if is_open == 2 %}
+                <div class="vote-wrapper" data-id="{{ festival[0] }}"
+                    data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
+                    {% if festival[0] in user_votes %}
+                    <button class="vote-btn voted">
+                        <i class="fa-solid fa-heart"></i>
+                        <span>Đã bình chọn</span>
+                    </button>
+                    {% else %}
+                    <button class="vote-btn">
+                        <i class="fa-regular fa-heart"></i>
+                        <span>Bình chọn</span>
+                    </button>
+                    {% endif %}
+                </div>
                 {% else %}
-                <img src="../static/images/team5.PNG" alt="Team 5">
+                <div class="vote-closed-tag">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>Chưa mở bình chọn</span>
+                </div>
                 {% endif %}
-                <div class="slide-overlay"></div>
             </div>
-
-            <!-- Content -->
-            <div class="slide-content">
-                <!-- Header -->
-                <div class="slide-header">
-                    <div class="user-info">
-                        {% if session['user_login'] %}
-                        <span class="user-name">{{ session['user_login'] }}</span>
-                        {% endif %}
-                    </div>
-                    <form action="{{ url_for('logout') }}" method="POST" class="logout-form">
-                        <button type="submit" class="logout-btn">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Team Number Badge -->
-                <div class="team-badge">
-                    <span>{{ loop.index }}</span>
-                    <span class="badge-label">/ {{ festivals|length }}</span>
-                </div>
-
-                <!-- Bottom Info -->
-                <div class="slide-bottom">
-                    <!-- Team Name -->
-                    <h2 class="team-name">{{ festival[1] }}</h2>
-                    <p class="team-subtitle">Tiết mục {{ loop.index }}</p>
-
-                    <!-- Vote Action -->
-                    <div class="vote-section">
-                        {% if session['user_code'] == 'ADMIN' %}
-                        <div class="vote-count-display" data-id="{{ festival[0] }}">
-                            <div class="vote-heart">
-                                <i class="fa-solid fa-heart"></i>
-                            </div>
-                            <span class="like-count">{{ festival[2] }}</span>
-                            <span class="vote-label">lượt bình chọn</span>
-                        </div>
-                        {% else %}
-                        {% if is_open == 2 %}
-                        <div class="vote-icon" data-id="{{ festival[0] }}"
-                            data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-                            {% if festival[0] in user_votes %}
-                            <button class="vote-btn-large voted">
-                                <i class="fa-solid fa-heart"></i>
-                                <span>Đã bình chọn</span>
-                            </button>
-                            {% else %}
-                            <button class="vote-btn-large">
-                                <i class="fa-regular fa-heart"></i>
-                                <span>Bình chọn ngay</span>
-                            </button>
-                            {% endif %}
-                        </div>
-                        {% else %}
-                        <div class="vote-icon hidden" data-id="{{ festival[0] }}"
-                            data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-                            <button class="vote-btn-large">
-                                <i class="fa-regular fa-heart"></i>
-                                <span>Bình chọn ngay</span>
-                            </button>
-                        </div>
-                        {% endif %}
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Swipe Hint -->
-                {% if loop.index < festivals|length %} <div class="swipe-hint">
-                    <i class="fa-solid fa-chevron-down"></i>
-                    <span>Vuốt để xem tiếp</span>
-            </div>
-            {% endif %}
+        </article>
+        {% endfor %}
     </div>
 
-    <!-- Side Actions (like TikTok) -->
-    <div class="side-actions">
-        {% if session['user_code'] != 'ADMIN' %}
-        {% if is_open == 2 %}
-        <div class="side-vote-icon" data-id="{{ festival[0] }}"
-            data-voted="{{ 'true' if festival[0] in user_votes else 'false' }}">
-            <div class="action-btn {{ 'active' if festival[0] in user_votes else '' }}">
-                <i class="fa-solid fa-heart"></i>
-            </div>
-            <span>Thích</span>
-        </div>
-        {% endif %}
-        {% else %}
-        <div class="action-btn view-likes" data-id="{{ festival[0] }}">
-            <i class="fa-solid fa-users"></i>
-            <span class="like-count">{{ festival[2] }}</span>
-        </div>
-        {% endif %}
-    </div>
-    </section>
-    {% endfor %}
+    <!-- Scroll Indicator -->
+    <div class="scroll-indicator" id="scrollIndicator">
+        {% for festival in festivals %}
+        <span class="indicator-dot {{ 'active' if loop.index == 1 else '' }}" data-index="{{ loop.index }}"></span>
+        {% endfor %}
     </div>
 
-    <!-- Admin Controls -->
-    {% if session['user_code'] == 'ADMIN' %}
-    <div class="admin-floating">
-        <button class="admin-btn button-open-vote" data-id="{{ is_open }}">
-            {% if is_open == 1 %}
-            <i class="fa-solid fa-play"></i>
-            <span>Mở vote</span>
-            {% else %}
-            <i class="fa-solid fa-stop"></i>
-            <span>Dừng</span>
-            {% endif %}
-        </button>
-    </div>
-    {% endif %}
-
-    <!-- Popups -->
-    <!-- Liker List Popup -->
-    <div class="popup-overlay liker-list-background hidden">
-        <div class="popup-content liker-list glass-card">
-            <header class="popup-header">
-                <h3>Danh sách người thích</h3>
-                <button class="popup-close">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </header>
-            <div class="popup-body liker-list-body">
+    <!-- Warning Popup -->
+    <div class="popup-overlay warning-popup hidden">
+        <div class="popup-content glass-card">
+            <div class="popup-icon warning">
+                <i class="fa-solid fa-exclamation-triangle"></i>
             </div>
+            <h3>Chỉ được bình chọn 1 tiết mục!</h3>
+            <p>Vui lòng bỏ chọn tiết mục khác trước</p>
+            <button class="gala-btn gala-btn-primary warning-popup-close">Đã hiểu</button>
         </div>
     </div>
 
-    <!-- Voting Expired Popup -->
-    {% if session['user_code'] != 'ADMIN' %}
-    {% if is_open == 2 %}
-    <div class="popup-overlay voting-expired-popup hidden">
-        {% else %}
-        <div class="popup-overlay voting-expired-popup">
-            {% endif %}
-            <div class="popup-content glass-card">
-                <div class="popup-icon">
-                    <i class="fa-solid fa-clock"></i>
-                </div>
-                <h3>Thời gian bình chọn đã kết thúc!</h3>
-                <p>Cảm ơn bạn đã tham gia</p>
-                <button class="gala-btn gala-btn-primary voting-expired-popup-close">Đóng</button>
+    <!-- Vote Closed Popup -->
+    <div class="popup-overlay vote-closed-popup hidden">
+        <div class="popup-content glass-card">
+            <div class="popup-icon">
+                <i class="fa-solid fa-lock"></i>
             </div>
+            <h3>Bình chọn đã đóng!</h3>
+            <p>Vui lòng đợi Admin mở bình chọn</p>
+            <button class="gala-btn gala-btn-primary vote-closed-popup-close">Đóng</button>
         </div>
-        {% endif %}
+    </div>
 
-        <!-- Warning Popup -->
-        <div class="popup-overlay warning-popup hidden">
-            <div class="popup-content glass-card">
-                <div class="popup-icon warning">
-                    <i class="fa-solid fa-exclamation-triangle"></i>
-                </div>
-                <h3>Chỉ được phép chọn một đội!</h3>
-                <p>Vui lòng bỏ chọn đội khác trước</p>
-                <button class="gala-btn gala-btn-primary warning-popup-close">Đã hiểu</button>
-            </div>
-        </div>
-
-        <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 </body>
 
 </html>

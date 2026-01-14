@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Xếp Hạng - Gala 2025</title>
+    <link rel="icon" href="https://home.seacorp.vn/web/image/res.company/1/logo">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gala.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/leaderboard.css') }}">
+</head>
+
+<body>
+    <!-- Particles Background -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confetti"></div>
+
+    <div class="leaderboard-container">
+        <!-- Header -->
+        <header class="lb-header">
+            <div class="logo-small">
+                <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP">
+            </div>
+            <h1 class="text-shimmer">BẢNG XẾP HẠNG</h1>
+            <form action="{{ url_for('logout') }}" method="POST">
+                <button type="submit" class="logout-btn-small">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+            </form>
+        </header>
+
+        <!-- Timer Section -->
+        <div class="timer-section">
+            <div class="timer-display" id="timerDisplay">
+                <span class="timer-minutes" id="minutes">05</span>
+                <span class="timer-colon">:</span>
+                <span class="timer-seconds" id="seconds">00</span>
+            </div>
+            <p class="timer-label" id="timerLabel">Thời gian bình chọn</p>
+        </div>
+
+        <!-- Control Button -->
+        <div class="control-section">
+            <button class="control-btn" id="controlBtn" data-status="{{ is_open }}">
+                {% if is_open == 2 %}
+                <i class="fa-solid fa-stop"></i>
+                <span>Dừng bình chọn</span>
+                {% else %}
+                <i class="fa-solid fa-play"></i>
+                <span>Bắt đầu bình chọn</span>
+                {% endif %}
+            </button>
+        </div>
+
+        <!-- Ranking List -->
+        <div class="ranking-section">
+            <div class="ranking-list" id="rankingList">
+                <!-- Rankings will be loaded here -->
+                <div class="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Đang tải...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Winner Overlay -->
+        <div class="winner-overlay hidden" id="winnerOverlay">
+            <div class="winner-content">
+                <div class="winner-crown">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <h2>🎉 Kết thúc bình chọn! 🎉</h2>
+                <div class="winner-name" id="winnerName"></div>
+                <div class="winner-votes" id="winnerVotes"></div>
+                <button class="gala-btn gala-btn-primary" id="closeWinner">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // State
+        let timerInterval = null;
+        let rankingInterval = null;
+        let totalSeconds = 300; // 5 minutes
+        let isRunning = false;
+        let previousRanking = [];
+
+        // DOM Elements
+        const $minutes = $('#minutes');
+        const $seconds = $('#seconds');
+        const $timerDisplay = $('#timerDisplay');
+        const $timerLabel = $('#timerLabel');
+        const $controlBtn = $('#controlBtn');
+        const $rankingList = $('#rankingList');
+        const $winnerOverlay = $('#winnerOverlay');
+
+        // Initialize
+        $(document).ready(function () {
+            loadRanking();
+
+            // Check if voting is already open
+            if ($controlBtn.data('status') === 2) {
+                // Don't auto-start timer, just load rankings
+                startRankingPolling();
+            }
+        });
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            $minutes.text(mins.toString().padStart(2, '0'));
+            $seconds.text(secs.toString().padStart(2, '0'));
+
+            // Red color when less than 1 minute
+            if (totalSeconds <= 60 && totalSeconds > 0) {
+                $timerDisplay.addClass('danger');
+            }
+
+            // Time's up
+            if (totalSeconds <= 0) {
+                endVoting();
+            }
+        }
+
+        // Start timer
+        function startTimer() {
+            totalSeconds = 300; // Reset to 5 minutes
+            updateTimerDisplay();
+            $timerDisplay.removeClass('danger');
+
+            timerInterval = setInterval(function () {
+                totalSeconds--;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        // Stop timer
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // Start ranking polling
+        function startRankingPolling() {
+            rankingInterval = setInterval(loadRanking, 2000);
+        }
+
+        // Stop ranking polling
+        function stopRankingPolling() {
+            if (rankingInterval) {
+                clearInterval(rankingInterval);
+                rankingInterval = null;
+            }
+        }
+
+        // Load ranking from API
+        function loadRanking() {
+            $.get('/api/ranking', function (data) {
+                renderRanking(data.teams);
+            });
+        }
+
+        // Render ranking with animation
+        function renderRanking(teams) {
+            const container = $rankingList;
+
+            // First load
+            if (previousRanking.length === 0) {
+                container.empty();
+                teams.forEach((team, index) => {
+                    container.append(createRankItem(team, index));
+                });
+                previousRanking = teams;
+                return;
+            }
+
+            // Update with animation
+            teams.forEach((team, newIndex) => {
+                const $item = $(`#rank-${team.id}`);
+                const oldIndex = previousRanking.findIndex(t => t.id === team.id);
+
+                if ($item.length) {
+                    // Update votes
+                    $item.find('.rank-votes').text(team.votes);
+
+                    // Update rank badge
+                    const $badge = $item.find('.rank-badge');
+                    $badge.text(newIndex + 1);
+                    $badge.removeClass('gold silver bronze');
+                    if (newIndex === 0) $badge.addClass('gold');
+                    else if (newIndex === 1) $badge.addClass('silver');
+                    else if (newIndex === 2) $badge.addClass('bronze');
+
+                    // Animate position change
+                    if (oldIndex !== newIndex) {
+                        if (newIndex < oldIndex) {
+                            $item.addClass('move-up');
+                        } else {
+                            $item.addClass('move-down');
+                        }
+                        setTimeout(() => {
+                            $item.removeClass('move-up move-down');
+                        }, 500);
+                    }
+                }
+            });
+
+            // Re-order DOM
+            teams.forEach((team) => {
+                const $item = $(`#rank-${team.id}`);
+                container.append($item);
+            });
+
+            previousRanking = teams;
+        }
+
+        // Create rank item HTML
+        function createRankItem(team, index) {
+            let badgeClass = '';
+            if (index === 0) badgeClass = 'gold';
+            else if (index === 1) badgeClass = 'silver';
+            else if (index === 2) badgeClass = 'bronze';
+
+            return `
+                <div class="rank-item" id="rank-${team.id}">
+                    <div class="rank-badge ${badgeClass}">${index + 1}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">${team.name}</div>
+                    </div>
+                    <div class="rank-score">
+                        <span class="rank-votes">${team.votes}</span>
+                        <span class="rank-label">phiếu</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Start voting
+        function startVoting() {
+            $.post('/api/start_vote', function (response) {
+                if (response.status === 'success') {
+                    isRunning = true;
+                    $controlBtn.html('<i class="fa-solid fa-stop"></i> <span>Dừng bình chọn</span>');
+                    $controlBtn.data('status', 2);
+                    $timerLabel.text('Thời gian còn lại');
+                    startTimer();
+                    startRankingPolling();
+                }
+            });
+        }
+
+        // End voting
+        function endVoting() {
+            stopTimer();
+            stopRankingPolling();
+
+            $.post('/api/end_vote', function (response) {
+                isRunning = false;
+                $controlBtn.html('<i class="fa-solid fa-play"></i> <span>Bắt đầu bình chọn</span>');
+                $controlBtn.data('status', 1);
+                $timerLabel.text('Đã kết thúc');
+
+                // Show winner
+                if (previousRanking.length > 0) {
+                    const winner = previousRanking[0];
+                    $('#winnerName').text(winner.name);
+                    $('#winnerVotes').text(winner.votes + ' phiếu bình chọn');
+                    $winnerOverlay.removeClass('hidden');
+                    createConfetti();
+                }
+            });
+        }
+
+        // Control button click
+        $controlBtn.on('click', function () {
+            const status = $(this).data('status');
+            if (status === 2) {
+                // Currently running, stop it
+                endVoting();
+            } else {
+                // Start voting
+                startVoting();
+            }
+        });
+
+        // Close winner overlay
+        $('#closeWinner').on('click', function () {
+            $winnerOverlay.addClass('hidden');
+            $('#confetti').empty();
+            totalSeconds = 300;
+            updateTimerDisplay();
+            $timerDisplay.removeClass('danger');
+            $timerLabel.text('Thời gian bình chọn');
+        });
+
+        // Create confetti
+        function createConfetti() {
+            const container = document.getElementById('confetti');
+            const colors = ['#ffd700', '#a855f7', '#e8b4b8', '#ffffff', '#6b21a8', '#ff6b6b'];
+
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
+            }
+        }
+    </script>
+</body>
+
+</html>
