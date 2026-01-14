@@ -1,4 +1,7 @@
-/* Reset mặc định */
+/* ============================================
+   CHECK-IN PAGE - GALA NIGHT THEME
+   ============================================ */
+
 * {
     margin: 0;
     padding: 0;
@@ -6,72 +9,212 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6fc;
+    font-family: var(--font-body);
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
-    padding: 0 15px;
+    justify-content: center;
+    background: var(--gala-bg-gradient);
+    padding: 20px;
+    overflow-x: hidden;
 }
 
-/* Container chính */
-.login-container {
-    background-color: #f4f6fc;
-    text-align: center;
+/* ============================================
+   CHECKIN CONTAINER
+   ============================================ */
+.checkin-container {
     width: 100%;
-    max-width: 360px;
+    max-width: 420px;
+    z-index: 1;
+    animation: fadeInUp 0.8s ease-out;
 }
 
-/* Logo */
-.logo img {
-    width: 180px;
-    margin-bottom: 30px;
+.checkin-card {
+    padding: 40px 30px;
+    text-align: center;
 }
 
-/* Form đăng nhập */
-.login-form {
+/* ============================================
+   LOGO
+   ============================================ */
+.logo-wrapper {
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.logo {
+    width: 100px;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
+    transition: all var(--transition-normal);
+}
+
+/* ============================================
+   WELCOME ICON
+   ============================================ */
+.welcome-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: var(--gala-gradient-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.welcome-icon svg {
+    color: #1a0a2e;
+}
+
+/* ============================================
+   TITLE & SUBTITLE
+   ============================================ */
+.title {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 4px;
+}
+
+.subtitle {
+    color: var(--gala-text-muted);
+    font-size: 1rem;
+    margin-bottom: 35px;
+    font-weight: 300;
+}
+
+/* ============================================
+   FORM
+   ============================================ */
+.checkin-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.login-form input {
-    height: 50px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 0 15px;
+/* Input Group */
+.input-group {
+    position: relative;
+}
+
+.input-group .gala-input {
+    padding-left: 50px;
+    height: 56px;
     font-size: 16px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.login-form input:focus {
-    outline: none;
-    border-color: #004b8d;
-    box-shadow: 0 0 5px rgba(0, 75, 141, 0.3);
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gala-text-muted);
+    transition: color var(--transition-normal);
 }
 
-/* Nút đăng nhập */
-.login-form button {
-    height: 50px;
-    background-color: #004b8d;
-    color: #ffffff;
-    font-size: 16px;
-    border: none;
+.input-group:focus-within .input-icon {
+    color: var(--gala-gold);
+}
+
+/* Error Message */
+.error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s;
+    color: #f87171;
+    font-size: 0.9rem;
+    animation: fadeIn 0.3s ease;
 }
 
-.login-form button:hover {
-    background-color: #00386d;
+/* Submit Button */
+.submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 56px;
+    font-size: 1rem;
+    margin-top: 10px;
 }
 
-/* Responsive */
+.submit-btn svg {
+    transition: transform var(--transition-normal);
+}
+
+.submit-btn:hover svg {
+    transform: scale(1.2);
+}
+
+/* ============================================
+   DECORATION STARS
+   ============================================ */
+.decoration-stars {
+    margin-top: 35px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    color: var(--gala-gold);
+    font-size: 1.2rem;
+    opacity: 0.6;
+}
+
+.decoration-stars span {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.decoration-stars span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.decoration-stars span:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.decoration-stars span:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 480px) {
-    .logo img {
-        width: 150px;
+    .checkin-card {
+        padding: 30px 20px;
+    }
+
+    .title {
+        font-size: 2rem;
+        letter-spacing: 3px;
+    }
+
+    .welcome-icon {
+        width: 70px;
+        height: 70px;
+    }
+
+    .welcome-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 360px) {
+    .title {
+        font-size: 1.7rem;
+        letter-spacing: 2px;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
     }
 }

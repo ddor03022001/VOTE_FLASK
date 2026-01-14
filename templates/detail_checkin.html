@@ -1,82 +1,208 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết Nhân Viên</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Xác Nhận Check-in - Gala 2025</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
         integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gala.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/detail_checkin.css') }}">
 </head>
 
 <body>
-    <div class="background"></div>
-    <div class="container">
-        <div class="info-box">
-            <h1>Thông Tin Nhân Viên</h1>
-            <div class="info-item">
-                <strong>Tên nhân viên:</strong>
-                <p>{{ user[1] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Mã nhân viên:</strong>
-                <p>{{ user[2] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Chức vụ:</strong>
-                <p>{{ user[4] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Số điện thoại:</strong>
-                <p>{{ user[3] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Số phòng:</strong>
-                <p>{{ user[7] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Số xe:</strong>
-                <p>{{ user[8] }}</p>
-            </div>
-            <div class="info-item">
-                <strong>Công ty:</strong>
-                <p>{{ user[5] }}</p>
-            </div>
-            {% if user[6] == false %}
-            <div class="text-detail hidden">Đã tham gia thành công</div>
-            <button class="confirm" data-id="{{ user[0] }}" type="submit">Ấn nút xác nhận tham gia</button>
-            {% else %}
-            <div class="text-detail">Đã tham gia thành công</div>
-            <button class="confirm hidden" data-id="{{ user[0] }}" type="submit">Ấn nút xác nhận tham gia</button>
-            {% endif %}
-        </div>
+    <!-- Particles Background -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
-</body>
-<script>
-    $('.confirm').on('click', function () {
-        const $icon = $(this);
-        const user_id = $icon.data('id');
-        console.log("check userID: ", user_id);
-        $.ajax({
-            url: '/get_user_confirm',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ user_id: user_id }),
-            success: function (response) {
-                if (response.action === 'success') {
-                    $('.confirm').addClass('hidden');
-                    $('.text-detail').removeClass('hidden');
-                }
-            },
-            error: function () {
-                alert('Có lỗi xảy ra! Vui lòng thử lại.');
+
+    <!-- Confetti Container -->
+    <div class="confetti-container" id="confetti"></div>
+
+    <div class="detail-container">
+        <div class="detail-card glass-card">
+            <!-- Header -->
+            <div class="card-header">
+                <div class="header-icon">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <h1 class="title text-shimmer">Thông Tin Khách Mời</h1>
+            </div>
+
+            <!-- Info List -->
+            <div class="info-list">
+                <div class="info-item delay-1">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Họ và tên</span>
+                        <span class="info-value">{{ user[1] }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item delay-2">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-id-badge"></i>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Mã nhân viên</span>
+                        <span class="info-value">{{ user[2] }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item delay-3">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Chức vụ</span>
+                        <span class="info-value">{{ user[4] }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item delay-4">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Số điện thoại</span>
+                        <span class="info-value">{{ user[3] }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item delay-5">
+                    <div class="info-icon">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Công ty</span>
+                        <span class="info-value">{{ user[5] }}</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-item small delay-4">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <div class="info-content">
+                            <span class="info-label">Số phòng</span>
+                            <span class="info-value">{{ user[7] }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-item small delay-5">
+                        <div class="info-icon">
+                            <i class="fa-solid fa-bus"></i>
+                        </div>
+                        <div class="info-content">
+                            <span class="info-label">Số xe</span>
+                            <span class="info-value">{{ user[8] }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section">
+                {% if user[6] == false %}
+                <div class="success-message hidden" id="successMessage">
+                    <div class="success-checkmark">
+                        <div class="check-icon"></div>
+                    </div>
+                    <p>Check-in thành công!</p>
+                    <span>Chúc bạn có một đêm Gala tuyệt vời!</span>
+                </div>
+                <button class="gala-btn gala-btn-primary confirm-btn" data-id="{{ user[0] }}" id="confirmBtn">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span>Xác Nhận Tham Gia</span>
+                </button>
+                {% else %}
+                <div class="success-message">
+                    <div class="success-checkmark">
+                        <div class="check-icon"></div>
+                    </div>
+                    <p>Check-in thành công!</p>
+                    <span>Chúc bạn có một đêm Gala tuyệt vời!</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Back Button -->
+        <a href="/checkin" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Quay lại</span>
+        </a>
+    </div>
+
+    <script>
+        // Confetti animation
+        function createConfetti() {
+            const container = document.getElementById('confetti');
+            const colors = ['#ffd700', '#a855f7', '#e8b4b8', '#ffffff', '#6b21a8'];
+
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
             }
+        }
+
+        // Confirm button click
+        $('#confirmBtn').on('click', function () {
+            const $btn = $(this);
+            const user_id = $btn.data('id');
+
+            $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...');
+
+            $.ajax({
+                url: '/get_user_confirm',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ user_id: user_id }),
+                success: function (response) {
+                    if (response.action === 'success') {
+                        $btn.fadeOut(300, function () {
+                            $('#successMessage').removeClass('hidden').hide().fadeIn(500);
+                            createConfetti();
+                        });
+                    }
+                },
+                error: function () {
+                    alert('Có lỗi xảy ra! Vui lòng thử lại.');
+                    $btn.prop('disabled', false).html('<i class="fa-solid fa-check-circle"></i> <span>Xác Nhận Tham Gia</span>');
+                }
+            });
         });
-    });
-</script>
+    </script>
+</body>
 
 </html>

@@ -1,25 +1,29 @@
 from flask import Flask, render_template, g, request, redirect, url_for, session, jsonify
-from passlib.context import CryptContext
 from flask_cors import CORS
-from psycopg2 import pool
-import psycopg2
+from psycopg2.pool import ThreadedConnectionPool
 from datetime import datetime, timedelta
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, async_mode='gevent')
 
-# Setting PostgreSQL Odoo
-DB_HOST = 'localhost'
-DB_NAME = 'odoopilot-22102024' 
-DB_USER = "admin"  
-DB_PASS = "1234"  
-SECRET_KEY = 'mysecretkey'  
+# Configuration from environment variables
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_NAME = os.getenv('DB_NAME', 'odoopilot-22102024')
+DB_USER = os.getenv('DB_USER', 'admin')
+DB_PASS = os.getenv('DB_PASS', '1234')
+SECRET_KEY = os.getenv('SECRET_KEY', 'change-this-in-production')
 
 app.config['SECRET_KEY'] = SECRET_KEY
 
-db_pool = pool.SimpleConnectionPool(1, 3, host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASS)
+# Connection pool: min=5, max=20 connections để chịu được nhiều user đồng thời
+db_pool = ThreadedConnectionPool(5, 20, host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASS)
 
 # Connect PostgreSQL
 def get_db_connection():
@@ -46,10 +50,9 @@ def get_is_open_from_db():
         cursor.close()
         return is_open
     finally:
-        # Trả kết nối lại pool
         db_pool.putconn(conn)
 
-# update vote status
+# Update vote status
 @app.route('/get_open_vote', methods=['POST'])
 def get_open_vote():
     isOpen = request.json.get('is_open')
@@ -57,19 +60,20 @@ def get_open_vote():
         return jsonify({"error": "Invalid request"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor()
 
-    if isOpen == 1:
-        cursor.execute('UPDATE status_vote_festival SET is_open = 2 WHERE id = 1')
-        action = 'end'
-    else:
-        cursor.execute('UPDATE status_vote_festival SET is_open = 1 WHERE id = 1')
-        action = 'start'
-        
-    conn.commit()
-    cursor.close()
-    
-    db_pool.putconn(conn)
+        if isOpen == 1:
+            cursor.execute('UPDATE status_vote_festival SET is_open = 2 WHERE id = 1')
+            action = 'end'
+        else:
+            cursor.execute('UPDATE status_vote_festival SET is_open = 1 WHERE id = 1')
+            action = 'start'
+            
+        conn.commit()
+        cursor.close()
+    finally:
+        db_pool.putconn(conn)
 
     is_open = get_is_open_from_db()
 
@@ -88,12 +92,13 @@ def get_user_confirm():
         return jsonify({"error": "Invalid request"}), 400
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("UPDATE res_user_vote_festival SET has_vote = True WHERE id = %s", (userId,))
-        
-    conn.commit()
-    cursor.close()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE res_user_vote_festival SET has_vote = True WHERE id = %s", (userId,))
+        conn.commit()
+        cursor.close()
+    finally:
+        db_pool.putconn(conn)
 
     return jsonify({"action": "success"})
 
@@ -110,7 +115,7 @@ def Checkin():
 
         conn = None
         try:
-            conn = db_pool.getconn()  # Lấy kết nối từ pool
+            conn = db_pool.getconn()
             cur = conn.cursor()
             login = login.replace(' ', '') 
             cur.execute("SELECT id, name, code, phone_number, position, company_name, has_vote, room_number, car_number FROM res_user_vote_festival WHERE REPLACE(phone_number, ' ', '') = %s", (login,))
@@ -124,7 +129,7 @@ def Checkin():
                 return render_template('checkin.html', error=error)
         finally:
             if conn:
-                db_pool.putconn(conn)  # Trả kết nối về pool
+                db_pool.putconn(conn)
 
     return render_template('checkin.html', error=error)
 
@@ -139,11 +144,10 @@ def login():
             error = "Vui lòng nhập đầy đủ số điện thoại!"
             return render_template('login.html', error=error)
 
-        login = login.replace(' ', '')  # Chuẩn hóa số điện thoại
+        login = login.replace(' ', '')
         conn = None
         try:
-            conn = db_pool.getconn()  # Lấy kết nối từ pool
-            print(f"Active connections:  {len(db_pool._pool)}")
+            conn = db_pool.getconn()
             cur = conn.cursor()
             cur.execute("""
                 SELECT id, name, code, phone_number, position, company_name, has_vote 
@@ -162,8 +166,7 @@ def login():
                 error = "Đăng nhập thất bại! Số điện thoại không đúng."
         finally:
             if conn:
-                db_pool.putconn(conn)  # Trả kết nối về pool
-                print(f"Active connections 1:  {len(db_pool._pool)}")
+                db_pool.putconn(conn)
 
     return render_template('login.html', error=error)
 
@@ -181,7 +184,7 @@ def index():
 
     conn = None
     try:
-        conn = db_pool.getconn()  # Lấy kết nối từ pool
+        conn = db_pool.getconn()
         cur = conn.cursor()
 
         # Lấy danh sách lễ hội
@@ -204,10 +207,10 @@ def index():
 
         # Sắp xếp và lấy trạng thái mở/đóng
         festivals_sorted = sorted(festivals, key=lambda x: x[3]) if festivals else []
-        is_open = get_is_open_from_db()  # Truy vấn trạng thái riêng
+        is_open = get_is_open_from_db()
     finally:
         if conn:
-            db_pool.putconn(conn)  # Trả kết nối về pool
+            db_pool.putconn(conn)
 
     return render_template('index.html', festivals=festivals_sorted, user_votes=user_votes, is_open=is_open)
 
@@ -286,7 +289,7 @@ def get_likes():
 def on_join(data):
     user_id = data['user_id']
     join_room(str(user_id))
-    print(f"User {user_id} joined room.")
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    # Production: debug=False
+    socketio.run(app, debug=False, host='0.0.0.0', port=5000)

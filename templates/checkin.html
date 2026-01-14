@@ -1,42 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tham Gia</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Check-in Gala 2025</title>
+    <link rel="icon" href="https://home.seacorp.vn/web/image/res.company/1/logo">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/gala.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkin.css') }}">
 </head>
 
 <body>
-    <div class="wrapper">
-        <form class="login-form" action="/checkin" method="POST">
-            <div class="logo">
-                <img src="https://home.seacorp.vn/web/image/res.company/1/logo" style="width: 180px;"
-                    alt="SEACORP Logo">
-            </div>
-            {% if error %}
-            <p style="color: red;">{{ error }}</p>
-            {% endif %}
-            <div class="input-field">
-                <input type="text" id="checkin" name="checkin" required>
-                <label>Enter your phone number</label>
-            </div>
-            <button type="submit">Tham Gia</button>
-        </form>
+    <!-- Particles Background -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
-    <!-- <div class="login-container">
-        <div class="logo">
-            <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo">
+
+    <div class="checkin-container">
+        <div class="checkin-card glass-card">
+            <!-- Logo -->
+            <div class="logo-wrapper">
+                <img src="https://home.seacorp.vn/web/image/res.company/1/logo" alt="SEACORP Logo" class="logo">
+            </div>
+
+            <!-- Welcome Icon -->
+            <div class="welcome-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 12l2 2 4-4"></path>
+                    <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.12 0 4.07.74 5.61 1.97"></path>
+                </svg>
+            </div>
+
+            <!-- Title -->
+            <h1 class="title text-shimmer">CHECK-IN</h1>
+            <p class="subtitle">Đêm Gala SEACORP 2025</p>
+
+            <!-- Check-in Form -->
+            <form class="checkin-form" action="/checkin" method="POST">
+                {% if error %}
+                <div class="error-message">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <div class="input-group">
+                    <input type="tel" id="checkin" name="checkin" class="gala-input" placeholder="Nhập số điện thoại"
+                        required>
+                    <div class="input-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <button type="submit" class="gala-btn gala-btn-primary submit-btn">
+                    <span>Xác Nhận Check-in</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Decoration -->
+            <div class="decoration-stars">
+                <span>✦</span>
+                <span>✦</span>
+                <span>✦</span>
+            </div>
         </div>
-        <form class="login-form" action="/" method="POST">
-            {% if error %}
-            <p style="color: red;">{{ error }}</p>
-            {% endif %}
-            <input type="text" id="login" name="login" placeholder="Số Điện Thoại">
-            <button type="submit">Xác Nhận</button>
-        </form>
-    </div> -->
+    </div>
 </body>
 
 </html>

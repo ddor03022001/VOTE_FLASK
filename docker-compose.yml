@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  vote_flask:
+    build: .
+    container_name: vote_flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=host.docker.internal  # Nếu DB ở máy host
+    volumes:
+      - ./static:/app/static
+      - ./templates:/app/templates
+    networks:
+      - vote_network
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: vote_flask_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx_docker.conf:/etc/nginx/conf.d/default.conf
+      - ./static:/app/static
+    depends_on:
+      - vote_flask
+    networks:
+      - vote_network
+
+networks:
+  vote_network:
+    driver: bridge

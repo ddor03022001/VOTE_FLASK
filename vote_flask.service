@@ -1,0 +1,15 @@
+[Unit]
+Description=Vote Flask Application
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/vote_flask
+Environment="PATH=/var/www/vote_flask/venv/bin"
+ExecStart=/var/www/vote_flask/venv/bin/gunicorn -c gunicorn_config.py app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

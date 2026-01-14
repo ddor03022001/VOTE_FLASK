@@ -1,439 +1,579 @@
+/* ============================================
+   INDEX (VOTE) PAGE - TIKTOK SWIPE STYLE
+   ============================================ */
+
 * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    /* background-color: #f4f4f4; */
+html {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
 }
 
-/* Lớp nền */
-.background {
-    position: fixed;
+body {
+    font-family: var(--font-body);
+    background: var(--gala-bg-dark);
+    overflow-x: hidden;
+}
+
+/* ============================================
+   SWIPE CONTAINER
+   ============================================ */
+.swipe-container {
+    width: 100%;
+    height: 100vh;
+}
+
+.swipe-slide {
+    width: 100%;
+    height: 100vh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ============================================
+   SLIDE BACKGROUND
+   ============================================ */
+.slide-background {
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('../images/sea.jpg') no-repeat center center/cover;
-    filter: blur(8px);
-    /* Làm mờ nền */
-    z-index: -1;
-    /* Đưa lớp nền xuống dưới */
+    z-index: 0;
 }
 
-/* Navigation Bar */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #333;
-    color: #fff;
-    padding: 1rem 1.5rem;
-    position: sticky;
+.slide-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.slide-overlay {
+    position: absolute;
     top: 0;
-}
-
-.navbar p {
-    margin: 0;
-    font-size: 14px;
-}
-
-.navbar button {
-    background: none;
-    border: none;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 14px;
-}
-
-.navbar button :hover {
-    cursor: pointer;
-}
-
-.description {
-    max-width: 80%;
-    text-align: center;
-    margin: 0 auto;
-}
-
-.countdown {
-    text-align: center;
-}
-
-.title {
-    font-weight: 600;
-    font-size: 24px;
-    margin: 2rem auto 1rem;
-    text-align: center;
-}
-
-@media screen and (max-width:1280px) {
-    .contestant-container {
-        grid-template-columns: repeat(2, 1fr) !important;
-    }
-}
-
-@media screen and (max-width:680px) {
-    .contestant-container {
-        grid-template-columns: repeat(1, 1fr) !important;
-    }
-}
-
-@media screen and (max-width:400px) {
-    .description {
-        max-width: 90%;
-        font-size: 13px;
-    }
-
-    .title {
-        max-width: 90%;
-        font-size: 20px;
-    }
-
-    .contestant-item-body p {
-        font-size: 14px;
-    }
-
-    .contestant-item-body .order {
-        height: 35px !important;
-        width: 35px !important;
-        font-size: 16px !important;
-    }
-
-    .contestant-item-body .order img {
-        height: 40px !important;
-    }
-
-    .contestant-item-footer {
-        padding: 1rem 0 0 !important;
-    }
-
-    .contestant-item-footer-btn {
-        padding: 0.5rem;
-        font-size: 13px !important;
-    }
-
-    .contestant-item-footer-btns {
-        gap: 0.5rem !important;
-    }
-
-    .contestant-item-footer-likes {
-        padding-left: 0.5rem;
-        gap: 5px !important;
-    }
-
-    .contestant-item-footer-likes img {
-        height: 20px !important;
-    }
-
-    .contestant-item-footer-likes span {
-        font-size: 14px !important;
-    }
-}
-
-/* List */
-.contestant-container {
-    gap: 2rem;
-    padding: 2rem 1.5rem 2rem;
+    left: 0;
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    height: 100%;
+    background: linear-gradient(180deg,
+            rgba(13, 0, 21, 0.3) 0%,
+            rgba(13, 0, 21, 0.1) 40%,
+            rgba(13, 0, 21, 0.5) 70%,
+            rgba(13, 0, 21, 0.95) 100%);
 }
 
-
-
-.contestant-item {
-    width: 100%;
-    border-radius: 10px;
-    background: white;
-    padding: 1rem;
-    box-shadow: 1px 2px 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-.contestant-item img {
-    width: 100%;
-    height: 200px;
-    object-fit: fill;
-}
-
-.contestant-item.first {
-    border: 5px solid #F9E400;
-}
-
-.contestant-item.second {
-    border: 5px solid #C9D7DD;
-}
-
-.contestant-item.third {
-    border: 5px solid #B2533E;
-}
-
-.contestant-item-body {
+/* ============================================
+   SLIDE CONTENT
+   ============================================ */
+.slide-content {
+    position: relative;
+    z-index: 1;
+    height: 100%;
     display: flex;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
+    flex-direction: column;
+    padding: 20px;
+    padding-right: 70px;
+    /* Space for side actions */
 }
 
-.contestant-item-body p {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 600;
-    flex: 1;
-}
-
-.contestant-item-body .order {
-    height: 45px;
-    color: white;
-    width: 45px;
-    border-radius: 50%;
-    background: #5a5958;
+/* Header */
+.slide-header {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.contestant-item-body .order.medal {
-    background: none;
-}
-
-.contestant-item-body .order img {
-    height: 50px;
-}
-
-.contestant-item-footer {
-    padding: 1.5rem 0.5rem 0;
-    display: flex;
-    align-items: center;
     justify-content: space-between;
-}
-
-.contestant-item-footer-likes {
-    display: flex;
-    cursor: pointer;
     align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-    padding: 0.2rem;
-    border-radius: 10px;
 }
 
-.contestant-item-footer-likes:hover {
-    text-decoration: underline;
-    background: #f1f1f1;
+.user-name {
+    color: var(--gala-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px 16px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
 }
 
-.contestant-item-footer-likes span {
-    font-size: 16px;
-    line-height: 16px;
+.logout-form {
+    margin: 0;
 }
 
-.contestant-item-footer-btns {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.contestant-item-footer-btn {
+.logout-btn {
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.3);
     border: none;
-    background: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
+    border-radius: 50%;
+    color: var(--gala-text);
+    font-size: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all var(--transition-normal);
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Team Badge */
+.team-badge {
+    position: absolute;
+    top: 80px;
+    left: 20px;
+    background: var(--gala-gradient-gold);
+    color: #1a0a2e;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 1.1rem;
     display: flex;
     align-items: center;
     gap: 5px;
+    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+}
+
+.badge-label {
+    font-weight: 400;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+/* Bottom Section */
+.slide-bottom {
+    margin-top: auto;
+    padding-bottom: 30px;
+}
+
+.team-name {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gala-white);
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
+}
+
+.team-subtitle {
+    color: var(--gala-text-muted);
+    font-size: 1rem;
+    margin-bottom: 25px;
+}
+
+/* Vote Section */
+.vote-section {
+    margin-top: 15px;
+}
+
+.vote-btn-large {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    color: var(--gala-white);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
+}
+
+.vote-btn-large i {
+    font-size: 1.4rem;
+}
+
+.vote-btn-large:hover {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: #ff6b6b;
+    transform: scale(1.05);
+}
+
+.vote-btn-large.voted {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 25px rgba(255, 107, 107, 0.5);
+}
+
+.vote-btn-large.voted i {
+    animation: heartBeat 1s ease-in-out;
+}
+
+/* Vote Count Display (Admin) */
+.vote-count-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.vote-heart {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
     color: white;
-    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.5);
+    animation: pulse 2s ease-in-out infinite;
 }
 
-.contestant-item-footer-btn.view {
+.vote-count-display .like-count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gala-white);
+}
+
+.vote-count-display .vote-label {
+    font-size: 1rem;
+    color: var(--gala-text-muted);
+}
+
+/* Swipe Hint */
+.swipe-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: var(--gala-text-muted);
+    font-size: 0.85rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+.swipe-hint i {
+    font-size: 1.2rem;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(8px);
+    }
+}
+
+/* ============================================
+   SIDE ACTIONS (TikTok style)
+   ============================================ */
+.side-actions {
+    position: absolute;
+    right: 15px;
+    bottom: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    z-index: 10;
+}
+
+.action-btn {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gala-white);
+    font-size: 22px;
     cursor: pointer;
-    box-shadow: none;
-    color: #333;
+    transition: all var(--transition-normal);
+    backdrop-filter: blur(10px);
 }
 
-.contestant-item-footer-btn.view:hover {
-    background: #f1f1f1;
+.action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
 }
 
-.contestant-item-footer-btn.like {
-    background: #FF4C4C;
+.action-btn.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.5);
+}
+
+.action-btn.active i {
+    animation: heartBeat 0.5s ease-in-out;
+}
+
+.side-vote-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.side-vote-icon span {
+    font-size: 0.75rem;
+    color: var(--gala-text);
+}
+
+.view-likes {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+}
+
+.view-likes span {
+    font-size: 0.8rem;
+    margin-top: 3px;
+}
+
+/* ============================================
+   ADMIN FLOATING BUTTON
+   ============================================ */
+.admin-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.admin-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--gala-gradient-purple);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
+    box-shadow: 0 4px 20px rgba(107, 33, 168, 0.5);
+    transition: all var(--transition-normal);
 }
 
-.contestant-item-footer-btn.like:hover {
-    background: crimson;
+.admin-btn:hover {
+    transform: scale(1.05);
 }
 
-.contestant-item-footer-btn.unlike {
-    background: #dfdfdf;
-    cursor: pointer;
-    color: black;
-}
-
-.contestant-item-footer-btn.unlike:hover {
-    background: #f1f1f1;
-}
-
-.liker-list-background {
+/* ============================================
+   POPUPS
+   ============================================ */
+.popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
     right: 0;
-    background: rgba(0, 0, 0, 0.5);
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+.popup-overlay.hidden {
+    display: none;
+}
+
+.popup-content {
+    width: 100%;
+    max-width: 400px;
+    padding: 30px 25px;
+    text-align: center;
+    animation: scaleIn 0.3s ease;
+}
+
+.popup-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 20px;
+    background: var(--gala-gradient-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #1a0a2e;
+}
+
+.popup-icon.warning {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+    color: white;
+}
+
+.popup-content h3 {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--gala-text);
+    margin-bottom: 10px;
+}
+
+.popup-content p {
+    color: var(--gala-text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+}
+
+.popup-content .gala-btn {
+    min-width: 150px;
+}
+
+/* Liker List Popup */
+.liker-list {
+    max-height: 80vh;
+    text-align: left;
+}
+
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.popup-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.popup-close {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: var(--gala-text);
+    cursor: pointer;
+    transition: all var(--transition-normal);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.liker-list-background.hidden {
-    display: none;
+.popup-close:hover {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
 }
 
-.vote-icon.hidden {
-    display: none;
-}
-
-.liker-list {
-    width: 90%;
-    max-width: 400px;
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    max-height: 80%;
-}
-
-.liker-list header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 28px;
-    cursor: pointer;
-    padding: 0 1rem;
-    padding-right: 0;
-    margin-bottom: 1rem;
-}
-
-.liker-list header span {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.liker-list-body {
-    min-height: 200px;
-    max-height: 400px;
+.popup-body {
+    max-height: 300px;
+    overflow-y: auto;
     scrollbar-width: thin;
-    overflow: auto;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    scrollbar-color: var(--gala-gold) transparent;
 }
 
 .liker-item {
     display: flex;
     align-items: center;
     gap: 12px;
-}
-
-.liker-item img {
-    width: 30px;
-    height: 30px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    margin-bottom: 8px;
 }
 
 .liker-item span {
-    font-size: 14px;
-    line-height: 14px;
+    color: var(--gala-text);
+    font-size: 0.95rem;
 }
 
-.voting-expired-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.voting-expired-popup.hidden {
-    display: none;
-}
-
-.voting-expired-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.warning-popup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.warning-popup.hidden {
-    display: none;
-}
-
-.warning-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.vote-icon.disabled {
-    pointer-events: none;
-    opacity: 0.5;
-}
-
-.container-admin {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    text-align: center;
-}
-
-.button-open-vote {
-    display: inline-block;
-    width: 100px;
-    height: 100px;
+.liker-avatar {
+    width: 36px;
+    height: 36px;
+    background: var(--gala-gradient-gold);
     border-radius: 50%;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a0a2e;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
-.button-open-vote:hover {
-    background-color: #0056b3;
-    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
-    transform: scale(1.1);
+.vote-icon.hidden {
+    display: none;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+    .slide-content {
+        padding: 15px;
+        padding-right: 60px;
+    }
+
+    .team-name {
+        font-size: 1.6rem;
+    }
+
+    .team-badge {
+        top: 70px;
+        left: 15px;
+        padding: 8px 16px;
+        font-size: 1rem;
+    }
+
+    .vote-btn-large {
+        padding: 14px 30px;
+        font-size: 1rem;
+    }
+
+    .side-actions {
+        right: 10px;
+        bottom: 120px;
+    }
+
+    .action-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+
+    .admin-floating {
+        top: 15px;
+        right: 15px;
+    }
+
+    .admin-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .team-name {
+        font-size: 1.4rem;
+    }
+
+    .vote-btn-large {
+        padding: 12px 25px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Hide scrollbar but keep functionality */
+html::-webkit-scrollbar {
+    display: none;
+}
+
+html {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

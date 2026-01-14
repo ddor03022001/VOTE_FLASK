@@ -1,0 +1,346 @@
+/* ============================================
+   DETAIL CHECK-IN PAGE - GALA NIGHT THEME
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-body);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gala-bg-gradient);
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+.detail-container {
+    width: 100%;
+    max-width: 480px;
+    z-index: 1;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.detail-card {
+    padding: 30px 25px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.card-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 15px;
+    background: var(--gala-gradient-gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #1a0a2e;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.card-header .title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* ============================================
+   INFO LIST
+   ============================================ */
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.info-row {
+    display: flex;
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 12px;
+    animation: slideInLeft 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.info-item.small {
+    flex: 1;
+}
+
+.info-icon {
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gala-gold);
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--gala-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: var(--gala-text);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Animation delays */
+.info-item.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.info-item.delay-2 {
+    animation-delay: 0.2s;
+}
+
+.info-item.delay-3 {
+    animation-delay: 0.3s;
+}
+
+.info-item.delay-4 {
+    animation-delay: 0.4s;
+}
+
+.info-item.delay-5 {
+    animation-delay: 0.5s;
+}
+
+/* ============================================
+   ACTION SECTION
+   ============================================ */
+.action-section {
+    text-align: center;
+}
+
+.confirm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 56px;
+    font-size: 1rem;
+}
+
+.confirm-btn i {
+    font-size: 1.2rem;
+}
+
+/* Success Message */
+.success-message {
+    padding: 25px;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.success-message.hidden {
+    display: none;
+}
+
+.success-message p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--gala-gold);
+    margin: 20px 0 8px;
+}
+
+.success-message span {
+    font-size: 0.9rem;
+    color: var(--gala-text-muted);
+}
+
+/* Success Checkmark Override */
+.success-checkmark {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.success-checkmark .check-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid var(--gala-gold);
+    position: relative;
+    animation: scaleIn 0.5s ease-out;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.success-checkmark .check-icon::before {
+    content: '';
+    position: absolute;
+    left: 22px;
+    top: 40px;
+    width: 15px;
+    height: 4px;
+    background: var(--gala-gold);
+    transform: rotate(45deg);
+    border-radius: 2px;
+}
+
+.success-checkmark .check-icon::after {
+    content: '';
+    position: absolute;
+    left: 32px;
+    top: 32px;
+    width: 28px;
+    height: 4px;
+    background: var(--gala-gold);
+    transform: rotate(-45deg);
+    border-radius: 2px;
+}
+
+/* ============================================
+   CONFETTI
+   ============================================ */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    top: -10px;
+    animation: confettiFall linear forwards;
+}
+
+.confetti-piece:nth-child(odd) {
+    border-radius: 50%;
+}
+
+.confetti-piece:nth-child(even) {
+    border-radius: 2px;
+}
+
+/* ============================================
+   BACK LINK
+   ============================================ */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    color: var(--gala-text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all var(--transition-normal);
+    width: 100%;
+}
+
+.back-link:hover {
+    color: var(--gala-gold);
+}
+
+.back-link i {
+    transition: transform var(--transition-normal);
+}
+
+.back-link:hover i {
+    transform: translateX(-5px);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+    .detail-card {
+        padding: 25px 20px;
+    }
+
+    .card-header .title {
+        font-size: 1.3rem;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+
+    .info-item {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .info-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+
+    .info-value {
+        font-size: 0.95rem;
+    }
+
+    .info-row {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 360px) {
+    .card-header .title {
+        font-size: 1.1rem;
+    }
+
+    .info-label {
+        font-size: 0.7rem;
+    }
+
+    .info-value {
+        font-size: 0.9rem;
+    }
+}
